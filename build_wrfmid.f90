@@ -22,13 +22,13 @@ program nc2wps
     real :: lats(NLATS), lons(NLONS), plvls(NLVLS)
     integer :: lon_varid, lat_varid, lvl_varid
     integer :: dimids(NDIMS),status
+    
+    integer, parameter :: maxvar = 7 
+    character (len =9), dimension(maxvar) :: fieldname  = (/'ta','hus','ua','va','zg','ps','tas'/)
+    character (LEN =9), dimension(maxvar) :: flnm  = (/'TT','SPECHUMD','UU','VV','GHT','PSFC','TT'/) 
 
-    integer, parameter :: maxvar = 1
-    character (len =9), dimension(maxvar) :: fieldname  = ' '
-    character (LEN =9), dimension(maxvar) :: flnm  = ' '
-
-    character (LEN=25), dimension(maxvar) :: unitout = ' '
-    character (LEN=46), dimension(maxvar) :: descout = ' '
+    character (LEN=25), dimension(maxvar) :: unitout = (/'K', 'kg kg-1', 'm s-1','m s-1','m', 'Pa','K'/)
+    character (LEN=46), dimension(maxvar) :: descout = (/'3-d air temperature', '3-d specific humidity', '3-d wind u-component', '3-d wind v-componend', '3-d geopotential height', 'Surface pressure', '2-m temperature'/)
 
     integer :: var_varid
     real, dimension(NLONS, NLATS, NLVLS) :: var
@@ -39,7 +39,7 @@ program nc2wps
     character (len = 25), parameter :: LON_UNITS = 'degrees_east'
 
     ! Loop indices
-    integer :: ilvl, lat, lon, rec, i,j,ij,imm,mm
+    integer :: ilvl, lat, lon, rec, i,j,ij,imm,mm, ivar
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     integer, parameter :: IUNIT = 10
     integer, parameter :: IFV=5
@@ -58,15 +58,10 @@ program nc2wps
     
 
     ! ----------------------------------------------------------  
-    flnm(1)='GHT'       
-    fieldname(1)='zg'
-    unitout(1)='m'
-    descout(1)='3-d geopotential height'
-
-    !  write(czero,'(I1)' ) 0
+       !  write(czero,'(I1)' ) 0
 
 
-    open(IUNIT, file='GHT:2020-12-19_12', form='unformatted')
+    open(IUNIT, file='CMIP:2020-12-19_12', form='unformatted')
 
     ! Read 1 record of NLVLS*NLATS*NLONS values, starting at the beginning 
     ! of the record (the (1, 1, 1, rec) element in the netCDF file).
@@ -74,7 +69,10 @@ program nc2wps
     start = (/ 1, 1/)
     !  print *, dimfile(i)
     !  status=nf_open(DIR//dimfile(i)//'.nc', nf_nowrite, ncid) 
-    status=nf_open('./output/zg_2020-12-19_12.nc', nf_nowrite, ncid) 
+
+
+    do ivar=1,maxvar
+    status=nf_open('./output/'/trim(fieldname(ivar))/'_2020-12-19_12.nc', nf_nowrite, ncid) 
     !  status=nf_open('/home/metctm1/array/data/cmip6/cmip6-mpi-esm-hr/ts_6hrPlevPt_MPI-ESM1-2-HR_ssp585_r1i1p1f1_gn_204001010600-204501010000.nc', nf_nowrite, ncid) 
     if(status/=nf_noerr) call handle_err(status)
 
