@@ -10,7 +10,7 @@ program nc2wps
 
     integer :: ncid
     integer, parameter :: NDIMS = 2, NRECS = 3 
-    integer, parameter :: NLVLS = 33, NLATS = 181, NLONS = 360 
+    integer, parameter :: NLVLS = 17, NLATS = 181, NLONS = 360 
     character (len = *), parameter :: LVL_NAME = 'plev'
     character (len = *), parameter :: LAT_NAME = 'lat'
     character (len = *), parameter :: LON_NAME = 'lon'
@@ -24,14 +24,17 @@ program nc2wps
     integer :: dimids(NDIMS),status
     
     integer, parameter :: maxvar = 7 
+    integer :: field_dim(maxvar)=(/3,3,3,3,3,2,2/)
     character (len =9), dimension(maxvar) :: fieldname  = (/'ta','hus','ua','va','zg','ps','tas'/)
     character (LEN =9), dimension(maxvar) :: flnm  = (/'TT','SPECHUMD','UU','VV','GHT','PSFC','TT'/) 
 
     character (LEN=25), dimension(maxvar) :: unitout = (/'K', 'kg kg-1', 'm s-1','m s-1','m', 'Pa','K'/)
     character (LEN=46), dimension(maxvar) :: descout = (/'3-d air temperature', '3-d specific humidity', '3-d wind u-component', '3-d wind v-componend', '3-d geopotential height', 'Surface pressure', '2-m temperature'/)
+    
 
     integer :: var_varid
-    real, dimension(NLONS, NLATS, NLVLS) :: var
+    real, dimension(NLONS, NLATS, NLVLS) :: var3d
+    real, dimension(NLONS, NLATS) :: var2d
 
 
     ! We recommend that each variable carry a 'units' attribute.
@@ -72,50 +75,63 @@ program nc2wps
 
 
     do ivar=1,maxvar
-    status=nf_open('./output/'/trim(fieldname(ivar))/'_2020-12-19_12.nc', nf_nowrite, ncid) 
-    !  status=nf_open('/home/metctm1/array/data/cmip6/cmip6-mpi-esm-hr/ts_6hrPlevPt_MPI-ESM1-2-HR_ssp585_r1i1p1f1_gn_204001010600-204501010000.nc', nf_nowrite, ncid) 
-    if(status/=nf_noerr) call handle_err(status)
+        status=nf_open('./output/'//trim(fieldname(ivar))//'_2020-12-19_12.nc', nf_nowrite, ncid) 
+        !  status=nf_open('/home/metctm1/array/data/cmip6/cmip6-mpi-esm-hr/ts_6hrPlevPt_MPI-ESM1-2-HR_ssp585_r1i1p1f1_gn_204001010600-204501010000.nc', nf_nowrite, ncid) 
+        if(status/=nf_noerr) call handle_err(status)
 
-    ! Get the varids of the latitude and longitude coordinate variables.
-    status=nf_inq_varid(ncid, LAT_NAME, lat_varid) 
-    if(status/=nf_noerr) call handle_err(status)
-    status=nf_inq_varid(ncid, LON_NAME, lon_varid) 
-    if(status/=nf_noerr) call handle_err(status)
-    status=nf_inq_varid(ncid, LVL_NAME, lvl_varid) 
-    if(status/=nf_noerr) call handle_err(status)
-    ! Read the latitude and longitude data.
-    status=nf_get_var_real(ncid, lat_varid, lats) 
-    if(status/=nf_noerr) call handle_err(status)
-    status=nf_get_var_real(ncid, lon_varid, lons) 
-    if(status/=nf_noerr) call handle_err(status)
-    status=nf_get_var_real(ncid, lvl_varid, plvls) 
-    if(status/=nf_noerr) call handle_err(status)
-    !! ----------------------------------------------------- 
-    status=nf_inq_varid(ncid, fieldname(1), var_varid)  
-    if(status/=nf_noerr) call handle_err(status)
-    status=nf_get_var_real(ncid, var_varid, var)
-    if(status/=nf_noerr) call handle_err(status)
+        ! Get the varids of the latitude and longitude coordinate variables.
+        status=nf_inq_varid(ncid, LAT_NAME, lat_varid) 
+        if(status/=nf_noerr) call handle_err(status)
+        status=nf_inq_varid(ncid, LON_NAME, lon_varid) 
+        if(status/=nf_noerr) call handle_err(status)
+        ! Read the latitude and longitude data.
+        status=nf_get_var_real(ncid, lat_varid, lats) 
+        if(status/=nf_noerr) call handle_err(status)
+        status=nf_get_var_real(ncid, lon_varid, lons) 
+        if(status/=nf_noerr) call handle_err(status)
+        status=nf_inq_varid(ncid, fieldname(ivar), var_varid)  
+        if(status/=nf_noerr) call handle_err(status)
+       
+        if (field_dim(ivar)==3) then
+            status=nf_inq_varid(ncid, LVL_NAME, lvl_varid) 
+            if(status/=nf_noerr) call handle_err(status)
+            status=nf_get_var_real(ncid, lvl_varid, plvls) 
+            if(status/=nf_noerr) call handle_err(status)
+            status=nf_get_var_real(ncid, var_varid, var3d)
+            if(status/=nf_noerr) call handle_err(status)
+        else
+            status=nf_get_var_real(ncid, var_varid, var2d)
+        end if
+        
+        !! ----------------------------------------------------- 
+        field=flnm(ivar)
+        units=unitout(ivar)
+        desc =descout(ivar)
 
-    field=flnm(1)
-    units=unitout(1)
-    desc =descout(1)
-
-
-    do ilvl=1,NLVLS
-        do lon=1,NX
-            do lat=1,NY
-                slab(lon,lat) = var(lon,lat, ilvl)
+        if (field_dim(ivar)==3) then
+            do ilvl=1,NLVLS
+                do lon=1,NX
+                    do lat=1,NY
+                        slab(lon,lat) = var3d(lon,lat, ilvl)
+                    end do
+                end do
+                call output(hdate, map_source,field,units,desc,plvls(ilvl),slab,nx,ny)
             end do
-        end do
-        call output(hdate, map_source,field,units,desc,plvls(ilvl),slab,nx,ny)
+        else
+            do lon=1,NX
+                do lat=1,NY
+                    slab(lon,lat) = var2d(lon,lat)
+                end do
+            end do
+            call output(hdate, map_source,field,units,desc,200100.0,slab,nx,ny)
+        end if
+        ! Close the file. This frees up any internal netCDF resources
+        ! associated with the file.
+        status=nf_close(ncid)
+        if(status/=nf_noerr) call handle_err(status)
+        ! If we got this far, everything worked as expected. Yipee! 
+        print *,'*** SUCCESS reading example file', '!'
     end do
-    ! Close the file. This frees up any internal netCDF resources
-    ! associated with the file.
-    status=nf_close(ncid)
-    if(status/=nf_noerr) call handle_err(status)
-    ! If we got this far, everything worked as expected. Yipee! 
-    print *,'*** SUCCESS reading example file', '!'
-
 end
 
 subroutine handle_err(status)
