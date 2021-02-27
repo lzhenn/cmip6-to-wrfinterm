@@ -10,7 +10,7 @@ program nc2wps
 
     integer :: ncid
     integer, parameter :: NDIMS = 2, NRECS = 3 
-    integer, parameter :: NLVLS = 17, NLATS = 181, NLONS = 360 
+    integer, parameter :: NLVLS = 14, NLATS = 181, NLONS = 360 
     character (len = *), parameter :: LVL_NAME = 'plev'
     character (len = *), parameter :: LAT_NAME = 'lat'
     character (len = *), parameter :: LON_NAME = 'lon'
@@ -23,13 +23,13 @@ program nc2wps
     integer :: lon_varid, lat_varid, lvl_varid
     integer :: dimids(NDIMS),status
     
-    integer, parameter :: maxvar = 7 
-    integer :: field_dim(maxvar)=(/3,3,3,3,3,2,2/)
-    character (len =9), dimension(maxvar) :: fieldname  = (/'ta','hus','ua','va','zg','ps','tas'/)
-    character (LEN =9), dimension(maxvar) :: flnm  = (/'TT','SPECHUMD','UU','VV','GHT','PSFC','TT'/) 
+    integer, parameter :: maxvar = 9
+    integer :: field_dim(maxvar)=(/3,3,3,3,3,2,2,2,2/)
+    character (len =9), dimension(maxvar) :: fieldname  = (/'ta','hus','ua','va','zg','ps','tas', 'uas','vas'/)
+    character (LEN =9), dimension(maxvar) :: flnm  = (/'TT','SPECHUMD','UU','VV','GHT','PSFC','TT','UU','VV'/) 
 
-    character (LEN=25), dimension(maxvar) :: unitout = (/'K', 'kg kg-1', 'm s-1','m s-1','m', 'Pa','K'/)
-    character (LEN=46), dimension(maxvar) :: descout = (/'3-d air temperature', '3-d specific humidity', '3-d wind u-component', '3-d wind v-componend', '3-d geopotential height', 'Surface pressure', '2-m temperature'/)
+    character (LEN=25), dimension(maxvar) :: unitout = (/'K', 'kg kg-1', 'm s-1','m s-1','m', 'Pa','K', 'm s-1', 'm s-1'/)
+    character (LEN=46), dimension(maxvar) :: descout = (/'3-d air temperature', '3-d specific humidity', '3-d wind u-component', '3-d wind v-componend', '3-d geopotential height', 'Surface pressure', '2-m temperature', '10-m u component', '10-m v component'/)
     
 
     integer :: var_varid
