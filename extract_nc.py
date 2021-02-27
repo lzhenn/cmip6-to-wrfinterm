@@ -21,7 +21,7 @@ def main_run():
     cfg_hdl=lib.cfgparser.read_cfg('./conf/config.ini')
  
     strt_time=datetime.datetime.strptime('2045-01-01 06:00','%Y-%m-%d %H:%M')
-    end_time=datetime.datetime.strptime('2045-01-01 06:00','%Y-%m-%d %H:%M')
+    end_time=datetime.datetime.strptime('2045-01-01 12:00','%Y-%m-%d %H:%M')
 
     dt=datetime.timedelta(hours=6)
 
@@ -45,6 +45,8 @@ def main_run():
     print('Construct CMIP Container...')
     print(vtable)
     for idx, itm in vtable.iterrows():
+        if itm['src_v']=='orog' or itm['src_v']=='sftlf':
+            continue
         cmip=lib.cmip_container.cmip_container(cfg_hdl,itm)
         print(cmip.fn)
         ds=cmip.ds
