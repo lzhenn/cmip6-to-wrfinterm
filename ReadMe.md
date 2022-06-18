@@ -1,7 +1,7 @@
-
 # cmip6-to-wrfinterm
 
-The repo uses fortran and python scripts to convert CMIP6 6-hr/3-hr output into WRF middle files, which are used to drive WRF model.
+The repo uses fortran source files and python scripts to convert CMIP6 6-houly output into WRF middle files, which are used to drive WRF model.
+The repo was only tested for MPI-ESM-1-2-HR model in SSP1/2/5 scenarios currently, you may need proper modifications for other model convension.
 
 ### Input Files
 
