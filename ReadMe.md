@@ -61,7 +61,8 @@ output_prefix=CMIP6
 * `[INPUT]['cmip_strt_ts']` and `[INPUT]['cmip_end_ts']` are the start and end time of the CMIP6 data.
 * `[OUTPUT]['etl_strt_ts']` and `[OUTPUT]['etl_end_ts']` are the start and end time of your desired ETL period.
 
-After you have edited the `config.ini` file, you can run the script again for your desired period. The intemediate files will be generated in the `[OUTPUT]['output_root']` folder.
+After you have edited the `config.ini` file, you can run the script again for your desired period. The intemediate files will be generated in the `[OUTPUT]['output_root']` folder. 
+Note that for `MPI-ESM-1-2-HR`, the soil properties between 10-200cm is not provided by the model and we overwrote it by 0-10cm soil properties, a special type mark of `2d-soilr` is provided in the varaible mapping table. You may need long-term (~1-month) spin-up run if your research requests accurate soil properties.
 
 ### [OPTIONAL] Modify ./db/${MODEL_NAME}.csv
 
@@ -90,7 +91,7 @@ tsl,ST010200,K,2d-soilr,PlevPt, 10-200 cm soil temp
 * `src_v` is the name of the variable in the CMIP6 data, which is also used to form the netCDF file name.
 * `aim_v` is the name of the variable archived in WRF intermidiate file, which is used by `metgrid.exe`.
 * `units` is the unit of the variable.
-* `type` denotes the type of the variable. `3d` means 3-d variable, `2d` means 2-d variable, `2d-soil` means 2-d variable in the soil layer. Note that for `MPI-ESM-1-2-HR`, the soil moisture between 10-200cm is not provided by the model and we overwrote it by 0-10cm soil, a special type mark of `2d-soilr` is provided here.
+* `type` denotes the type of the variable. `3d` means 3-d variable, `2d` means 2-d variable, `2d-soil` means 2-d variable in the soil layer. Note that for `MPI-ESM-1-2-HR`, the soil properties between 10-200cm is not provided by the model and we overwrote it by 0-10cm soil, a special type mark of `2d-soilr` is provided here.
 * `lvlmark` is the level mark of the variable. `PlevPt` means the variable is a 3-d variable with pressure level.
 * `desc` is the description of the variable.
 
