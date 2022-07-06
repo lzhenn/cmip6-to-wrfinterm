@@ -1,9 +1,40 @@
-# cmip6-to-wrfinterm
+# cmip6-to-wrfinterm: Convert CMIP6 netCDF output into WRF-Interim format files
 
-The repo uses fortran source files and python scripts to convert CMIP6 6-houly output into WRF intermediate files, which are used to drive WRF model.
-Currently, the repo was only tested for **MPI-ESM-1-2-HR** model in **historical run and SSP1/2/5 scenarios**, you may need proper modifications for other model convension.
+**CMIP6-to-WRFInterim** uses pure python implementation to convert CMIP6 sub-daily output into WRF intermediate files, which are used to drive the WRF model for regional dynamical downscaling usage.
+Currently, only **MPI-ESM-1-2-HR** model has been teseted in **historical run and SSP1/2/5 scenarios**, you may need proper modifications for other model convension.
 
-Here we give an SSP245 run for example to show the usage of this repo.
+## Installation
+Please install python3 using Anaconda3 distribution. [Anaconda3](https://www.anaconda.com/products/individual) with python3.9 has been fully tested, lower version of python3 may also work (without testing).
+
+Now, we recommend to create a new environment in Anaconda and install the `requirements.txt`:
+
+```bash
+conda create -n test_c2w python=3.9
+conda activate test_c2w
+pip install -r requirements.txt
+```
+
+## Quick start
+
+'''bash
+python3 run_c2w.py
+'''
+
+If you could successfully run the above command, you should see `CMIP6:2100-01-02_00` and `CMIP6:2100-01-02_00` in the `./output` folder. 
+Copy or link the two intermidiate files to your WPS folder, prepare your **geo_em** files ready and setup your `namelist.wps` properly, now you are ready to run `metgrid.exe` and the following WRF procedures.
+
+There is a simple example of `namelist.wps` and `namelist.input` file covering the East Asian region in the `./sample` folder.
+
+A snapshot of the skin temperature in the initial condition and after 6-hour WRF run is shown below.
+
+## How it works
+
+The whole conversion process is purely python-based divided into three steps:
+
+
+
+Here we give a example to run the WRF driven by the `MPI-ESM-1-2-HR` initial and boundary conditions in SSP585 scenario, covering 00Z to 06Z on Jan 2, 2100.
+
 
 
 ## Fetch Input Files
