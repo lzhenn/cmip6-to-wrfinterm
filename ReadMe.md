@@ -4,7 +4,7 @@
 Currently, only **MPI-ESM-1-2-HR** model has been teseted in **historical run and SSP1/2/5 scenarios**, you may need proper modifications for other model convension.
 
 ## Installation
-Please install python3 using Anaconda3 distribution. [Anaconda3](https://www.anaconda.com/products/individual) with python3.8 and 3.9 has been fully tested, lower version of python3 may also work (without testing). If `numpy`, `pandas`, `scipy`, `xarray`, `netcdf4` are properly installed, you may skip the installation step.
+Please install python3 using Anaconda3 distribution. [Anaconda3](https://www.anaconda.com/products/individual) with python3.8 and 3.9 has been deeply tested, lower version of python3 may also work (without testing). If `numpy`, `pandas`, `scipy`, `xarray`, `netcdf4` are properly installed, you may skip the installation step.
 
 While, we recommend to create a new environment in Anaconda and install the `requirements.txt`:
 
@@ -28,13 +28,38 @@ There is a simple example of `namelist.wps` and `namelist.input` covering the Ea
 A snapshot of the skin temperature in the initial condition and after 6-hour WRFv4.3 run is shown below.
 
 
-## How it works
+## Usage
 
-The whole conversion process is purely python-based divided into three steps:
+### ./conf/config.ini
 
+When you properly download the CMIP6 data, First edit the `./conf/config.ini` file properly.
 
+``` python
+[INPUT]
+input_root=./sample/ 
+model_name=MPI-ESM1-2-HR
+exp_id = ssp585
+esm_flag=r1i1p1f1
+grid_flag=gn
+#YYYYMMDDHHMM
+cmip_strt_ts = 210001020000
+cmip_end_ts = 210001020600
+# In hours
+cmip_frq=6
 
-Here we give a example to run the WRF driven by the `MPI-ESM-1-2-HR` initial and boundary conditions in SSP585 scenario, covering 00Z to 06Z on Jan 2, 2100.
+[OUTPUT]
+#YYYYMMDDHHMM, please seperate your ETL processes if request very long-term simulation
+etl_strt_ts = 210001020000
+etl_end_ts = 210001020600
+output_root = ./output/
+output_prefix=CMIP6 
+``` 
+* [INPUT]['input_root'] is the root directory of the CMIP6 data, here it points to the `./sample/` folder.
+* [INPUT]['model_name'] is the name of the model. Now only the `MPI-ESM-1-2-HR` model is supported. This item will guide the script to read the corresponding variable mapping table in `./db/`. If you plan to use other models, you need to setup your own variable mapping table.ls
+* [INPUT]['exp_id'] ['esm_flag'] ['grid_flag'] are used to form the netCDF file name.
+* [INPUT]['cmip_strt_ts'] and [INPUT]['cmip_end_ts'] are the start and end time of the CMIP6 data.
+
+### 
 
 
 
