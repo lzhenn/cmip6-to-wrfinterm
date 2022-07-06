@@ -55,18 +55,19 @@ etl_end_ts = 210001020600
 output_root = ./output/
 output_prefix=CMIP6 
 ``` 
-* [INPUT]['input_root'] is the root directory of the CMIP6 data, here it points to the `./sample/` folder.
-* [INPUT]['model_name'] is the name of the model. Now only the `MPI-ESM-1-2-HR` model is supported. This item will guide the script to read the corresponding variable mapping table in `./db/`. If you plan to use other models, you need to setup your own variable mapping table (see below).
-* [INPUT]['exp_id'] ['esm_flag'] ['grid_flag'] are used to form the netCDF file name.
-* [INPUT]['cmip_strt_ts'] and [INPUT]['cmip_end_ts'] are the start and end time of the CMIP6 data.
-* [OUTPUT]['etl_strt_ts'] and [OUTPUT]['etl_end_ts'] are the start and end time of your desired ETL period.
+* `[INPUT]['input_root']` is the root directory of the CMIP6 data, here it points to the `./sample/` folder.
+* `[INPUT]['model_name']` is the name of the model. Now only the `MPI-ESM-1-2-HR` model is supported. This item will guide the script to read the corresponding variable mapping table in `./db/`. If you plan to use other models, you need to setup your own variable mapping table (see below).
+* `[INPUT]['exp_id']` `['esm_flag']` `['grid_flag']` are used to form the netCDF file name.
+* `[INPUT]['cmip_strt_ts']` and `[INPUT]['cmip_end_ts']` are the start and end time of the CMIP6 data.
+* `[OUTPUT]['etl_strt_ts']` and `[OUTPUT]['etl_end_ts']` are the start and end time of your desired ETL period.
 
 After you have edited the `config.ini` file, you can run the script again for your desired period. The intemediate files will be generated in the `[OUTPUT]['output_root']` folder.
 
 ### [OPTIONAL] Modify ./db/${MODEL_NAME}.csv
 
 `./db/${MODEL_NAME}.csv` records the model-specified variable mapping table. If you plan to use other models, you need to setup your own variable mapping table. 
-```
+
+``` javascript 
 src_v,aim_v,units,type,lvlmark,desc
 ta,TT,K,3d,PlevPt,3-d air temperature
 hus,SPECHUMD,kg kg-1,3d,PlevPt,3-d specific humidity
