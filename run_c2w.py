@@ -38,11 +38,5 @@ def main_run():
         utils.write_log('Writing time: '+str(time_frm))
         cmip_hdl.write_wrfinterm(time_frm)
     
-    exit()    
-        
-    with open(cfg_hdl['OUTPUT']['output_root']+cfg_hdl['INPUT']['exp_id']+'/timelist', 'a') as f:
-        for itime in time_series:
-            f.write(itime.strftime('%Y-%m-%d_%H')+'\n')
-
 if __name__=='__main__':
     main_run()
