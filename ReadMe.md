@@ -29,6 +29,12 @@ There is a simple example of `namelist.wps` and `namelist.input` covering the Ea
 
 If you run the sample case successfully, you are expected to see snapshots of the skin temperature in the initial condition and after 6-hour WRFv4.3 run as shown as above.
 
+
+## Troubleshooting
+
+**(Nov 27, 2022)**: According to feedback from several users, if you are using Windows Subsystem for Linux (WSL, typically Ubuntu from Microsoft Store), please note Windows does **NOT** support colon ":" in the file name.
+You may rename the output file name or try a pure Linux platform.
+
 ## Usage
 
 ### Modify config.ini
@@ -63,6 +69,7 @@ output_prefix=CMIP6
 
 After you have edited the `config.ini` file, you can run the script again for your desired period. The intemediate files will be generated in the `[OUTPUT]['output_root']` folder. 
 Note that for `MPI-ESM-1-2-HR`, the soil properties between 10-200cm is not provided by the model and we overwrote it by 0-10cm soil properties, a special type mark of `2d-soilr` is provided in the varaible mapping table. You may need long-term (~1-month) spin-up run if your research requests accurate soil properties.
+
 
 ### [OPTIONAL] Modify ./db/${MODEL_NAME}.csv
 
@@ -133,6 +140,6 @@ CMIP6 data can be downloaded from the [LLNL interface](https://esgf-node.llnl.go
 
 You may setup your own variable mapping table in `./db/${MODEL_NAME}.csv` if you want to use other models.
 
-**Any question, please contact Zhenning LI (zhenningli91@gmail.com)**
+**Any question, please contact Zhenning LI (zhenningli91@gmail.com). Since I am receiving many requests recently, please have a short introduction of yourself (e.g. affiliation, research field, etc.) :-).**
 
 
