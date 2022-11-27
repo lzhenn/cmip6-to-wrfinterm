@@ -23,7 +23,7 @@ python3 run_c2w.py
 ```
 
 If you successfully run the above command (it is okay to see some FutureWarnings), you should see `CMIP6:2100-01-02_00` and `CMIP6:2100-01-02_00` in the `./output` folder.
-(See [Troubleshooting](https://github.com/lzhenn/cmip6-to-wrfinterm) if you are a Windows Subsystem user.)
+(See [Troubleshooting](https://github.com/lzhenn/cmip6-to-wrfinterm#troubleshooting) if you are a Windows Subsystem user.)
 Copy or link the two intermidiate files to your WPS folder, prepare your **geo_em** files and setup your `namelist.wps` properly, now you are ready to run `metgrid.exe` and the following WRF procedures.
 
 There is a simple example of `namelist.wps` and `namelist.input` covering the East Asian region in the `./sample` folder for testing.
