@@ -126,7 +126,7 @@ class CMIPHandler(object):
         for idx, itm in self.vtable.iterrows():
             varname=itm['src_v']
             lvlmark=itm['lvlmark']
-            if not(lvlmark is np.nan):
+            if lvlmark == 'None':
                 lvlmark=''
             # repeat level to pad missing soil layers
             if itm['type'] == '2d-soilr':
