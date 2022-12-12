@@ -8,7 +8,7 @@ import xarray as xr
 import numpy as np
 from scipy.io import FortranFile
 from utils import utils
-
+from scipy.interpolate import griddata
 
 
 print_prefix='lib.cmip_container>>'
@@ -103,7 +103,8 @@ class CMIPHandler(object):
         self.cmip_end_ts=in_cfg['cmip_end_ts']
         self.cimp_frq=in_cfg['cmip_frq']
 
-        self.vtable=pd.read_csv('./db/'+in_cfg['model_name']+'.csv')
+        vtable=in_cfg['vtable_name'].replace('@model',self.model_name)
+        self.vtable=pd.read_csv('./db/'+vtable+'.csv')
 
         self.etl_strt_time=datetime.datetime.strptime(out_cfg['etl_strt_ts'],'%Y%m%d%H%M')
         self.etl_end_time=datetime.datetime.strptime(out_cfg['etl_end_ts'],'%Y%m%d%H%M')
@@ -125,7 +126,8 @@ class CMIPHandler(object):
         for idx, itm in self.vtable.iterrows():
             varname=itm['src_v']
             lvlmark=itm['lvlmark']
-
+            if not(lvlmark is np.nan):
+                lvlmark=''
             # repeat level to pad missing soil layers
             if itm['type'] == '2d-soilr':
                 continue
@@ -148,7 +150,7 @@ class CMIPHandler(object):
         for idx, itm in self.vtable.iterrows():
             varname=itm['src_v']
             lvltype=itm['type']
-
+            
             # repeat level to pad missing soil layers
             if lvltype == '2d-soilr':
                 continue
@@ -158,12 +160,27 @@ class CMIPHandler(object):
             if varname =='mrsos':
                 ds.values=ds.values*1e-2
 
+            if varname =='tos' and itm['units']=='degC':
+                ds.values=ds.values+273.15
+                itm['units']='K'
+
             if lvltype=='3d':
                 self.outfrm[varname]=ds.interp(lat=new_lat, lon=new_lon, plev=new_lv,
                         method='linear',kwargs={"fill_value": "extrapolate"})
-            
             elif lvltype=='2d':
-                self.outfrm[varname]=ds.interp(lat=new_lat, lon=new_lon,
+                if varname=='tos':
+                    ocn_da=ds.interpolate_na(dim='j',
+                        method='linear',fill_value="extrapolate")
+                    grid_x,grid_y=np.meshgrid(new_lon,new_lat)
+                    values=ocn_da.values
+                    points=np.array(
+                        [ds.latitude.values.flatten(),ds.longitude.values.flatten()]).T
+                    grid_z0 = griddata(
+                        points, values.flatten(), 
+                        (grid_x, grid_y), method='nearest')
+                    self.outfrm[varname]=grid_z0
+                else:
+                    self.outfrm[varname]=ds.interp(lat=new_lat, lon=new_lon,
                         method='linear',kwargs={"fill_value": "extrapolate"})
             
             elif lvltype=='2d-soil':
@@ -189,7 +206,11 @@ class CMIPHandler(object):
             varname=itm['src_v']
             lvltype=itm['type']
             out_dic['FIELD']=itm['aim_v']
+            
             out_dic['UNIT']=itm['units']
+            if varname=='tos':
+                out_dic['UNIT']='K'
+
             out_dic['DESC']=itm['desc']
             
             out_dic['XLVL']=200100.0
@@ -199,7 +220,10 @@ class CMIPHandler(object):
                     out_dic['SLAB']=self.outfrm[varname].sel(plev=lvl).values
                     write_record(wrf_mid, out_dic)
             else:
-                out_dic['SLAB']=self.outfrm[varname].values
+                if varname=='tos':
+                    out_dic['SLAB']=self.outfrm[varname]
+                else:
+                    out_dic['SLAB']=self.outfrm[varname].values
                 write_record(wrf_mid, out_dic)
        
         wrf_mid.close()

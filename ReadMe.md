@@ -33,6 +33,8 @@ If you run the sample case successfully, you are expected to see snapshots of th
 
 ## Troubleshooting
 
+**(Dec 12, 2022)**: Lack of suitable source variables are common. For example, the available 6-hour `ts` variable in SSP is missing in historical run, we cannot directly mapping the `SST` by `ts`. You may need to use 3-hour `tos` variable and set `cmip_frq=3` in `config.ini` to generate the 3-hour SST in historical run (see the Vtable with suffix `HIST` or simply `SST`). Make sure to use a different `output_prefix` such as `SST`. (Thanks [Paul Nalon from ICHEC](https://www.ichec.ie/staff/paul-nolan-phd)) 
+
 **(Nov 27, 2022)**: According to feedback from several users, if you are using Windows Subsystem for Linux (WSL, typically Ubuntu from Microsoft Store), please note Windows does **NOT** support colon ":" in the file name.
 You may rename the output file name or try a pure Linux platform.
 
@@ -46,6 +48,7 @@ When you properly download the `MPI-ESM1-2-HR` data, First edit the `./conf/conf
 [INPUT]
 input_root=./sample/ 
 model_name=MPI-ESM1-2-HR
+vtable_name=@model
 exp_id = ssp585
 esm_flag=r1i1p1f1
 grid_flag=gn
@@ -63,7 +66,9 @@ output_root = ./output/
 output_prefix=CMIP6 
 ``` 
 * `[INPUT]['input_root']` is the root directory of the CMIP6 data, here it points to the `./sample/` folder.
-* `[INPUT]['model_name']` is the name of the model. Now only the `MPI-ESM-1-2-HR` model is supported. This item will guide the script to read the corresponding variable mapping table in `./db/`. If you plan to use other models, you need to setup your own variable mapping table (see below).
+* `[INPUT]['model_name']` is the name of the model. Now only the `MPI-ESM-1-2-HR` model is supported. If you plan to use other models, you need to setup your own variable mapping table (see below).
+* `[INPUT]['vtable_name']` Will assign which Vtable to use. This item will guide the script to read the corresponding variable mapping table in `./db/`. The seperation of model_name and vtable_name will be useful if you hope to replace some variables in the same model.
+
 * `[INPUT]['exp_id']` `['esm_flag']` `['grid_flag']` are used to form the netCDF file name.
 * `[INPUT]['cmip_strt_ts']` and `[INPUT]['cmip_end_ts']` are the start and end time of the CMIP6 data.
 * `[OUTPUT]['etl_strt_ts']` and `[OUTPUT]['etl_end_ts']` are the start and end time of your desired ETL period.
