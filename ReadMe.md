@@ -33,7 +33,9 @@ If you run the sample case successfully, you are expected to see snapshots of th
 
 ## Troubleshooting
 
-**(Dec 12, 2022)**: Lack of suitable source variables are common. For example, the available 6-hour `ts` variable in SSP is missing in historical run, we cannot directly mapping the `SST` by `ts`. You may need to use 3-hour `tos` variable and set `cmip_frq=3` in `config.ini` to generate the 3-hour SST in historical run (see the Vtable with suffix `HIST` or simply `SST`). Make sure to use a different `output_prefix` such as `SST`. (Thanks [Paul Nalon from ICHEC](https://www.ichec.ie/staff/paul-nolan-phd)) 
+**(Dec 12, 2022)**: Lack of suitable source variables from CMIP6 datasets to drive the dynamical downscaling are common. For example, the available 6-hour `ts` variable in SSP is missing in historical run of `MPI-ESM1-2-HR` output. We cannot directly map the `SST` by `ts`.
+One trade-off is using the `tas` to represent both the land surface and sea surface temperature, just as you could find in the `MPI-ESM1-2-HR_HIST.csv` vtable. While this is not a good strategy. 
+For accurate representation of sea surface temperature, you may need to use 3-hour `tos` variable and set `cmip_frq=3` in `config.ini` to generate the 3-hour SST in historical run (see the Vtable with suffix `SST`). Make sure to use a different `output_prefix` such as `SST`. (Thanks [Dr. Paul Nalon from ICHEC](https://www.ichec.ie/staff/paul-nolan-phd) and [Dr. Sium Gebremariam](http://www.met.psu.edu/people/stg5265) helping with this.) 
 
 **(Nov 27, 2022)**: According to feedback from several users, if you are using Windows Subsystem for Linux (WSL, typically Ubuntu from Microsoft Store), please note Windows does **NOT** support colon ":" in the file name.
 You may rename the output file name or try a pure Linux platform.

@@ -169,15 +169,15 @@ class CMIPHandler(object):
                         method='linear',kwargs={"fill_value": "extrapolate"})
             elif lvltype=='2d':
                 if varname=='tos':
-                    ocn_da=ds.interpolate_na(dim='j',
+                    ocn_da=ds.interpolate_na(dim='i',
                         method='linear',fill_value="extrapolate")
                     grid_x,grid_y=np.meshgrid(new_lon,new_lat)
                     values=ocn_da.values
                     points=np.array(
-                        [ds.latitude.values.flatten(),ds.longitude.values.flatten()]).T
+                        [ds.longitude.values.flatten(),ds.latitude.values.flatten()]).T
                     grid_z0 = griddata(
                         points, values.flatten(), 
-                        (grid_x, grid_y), method='nearest')
+                        (grid_x, grid_y), method='linear')
                     self.outfrm[varname]=grid_z0
                 else:
                     self.outfrm[varname]=ds.interp(lat=new_lat, lon=new_lon,
