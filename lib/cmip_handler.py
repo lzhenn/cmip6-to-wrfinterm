@@ -171,13 +171,16 @@ class CMIPHandler(object):
                 if varname=='tos':
                     ocn_da=ds.interpolate_na(dim='i',
                         method='linear',fill_value="extrapolate")
+                    ocn_da=ocn_da.interpolate_na(dim='j',
+                        method='linear',fill_value="extrapolate")
                     grid_x,grid_y=np.meshgrid(new_lon,new_lat)
                     values=ocn_da.values
                     points=np.array(
                         [ds.longitude.values.flatten(),ds.latitude.values.flatten()]).T
+                    # here use nearest as linear will cause some nan
                     grid_z0 = griddata(
                         points, values.flatten(), 
-                        (grid_x, grid_y), method='linear')
+                        (grid_x, grid_y), method='nearest')  
                     self.outfrm[varname]=grid_z0
                 else:
                     self.outfrm[varname]=ds.interp(lat=new_lat, lon=new_lon,
