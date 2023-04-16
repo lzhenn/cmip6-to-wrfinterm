@@ -49,7 +49,7 @@ Now, you will find output files in the `./output` folder with the prefix `EC-EAR
 |EC-Earth3_PLEV   | gr        | 197901010000 | 197912311800| 6        | EC-EARTH3-PLEV   |
 |EC-Earth3_SST    | gn        | 197901010300 | 198001010000| 3        | EC-EARTH3-SST    | 
 
-There is a simple example of `namelist.wps` and `namelist.input` covering the East Asian region in the `./sample/EC-Earth3` folder for testing.
+There is a simple example of `namelist.wps` and `namelist.input` covering the central America in the `./sample/EC-Earth3` folder for testing.
 
 If you run the sample case successfully, you are expected to see snapshots of the skin temperature in the initial condition and after 6-hour WRFv4.3 run as shown as below. Thanks [Dr. Tito Maldonado from University of Costa Rica](https://cigefi.ucr.ac.cr/team/tito-maldonado-phd/) for helping with the EC-Earth3 support.
 
