@@ -51,6 +51,7 @@ Now you will find output files in `./output` folder with prefix `EC-EARTH3-SURF3
 There is a simple example of `namelist.wps` and `namelist.input` covering the East Asian region in the `./sample/EC-Earth3` folder for testing.
 
 If you run the sample case successfully, you are expected to see snapshots of the skin temperature in the initial condition and after 6-hour WRFv4.3 run as shown as below. Thanks [Dr. Tito Maldonado from University of Costa Rica](https://cigefi.ucr.ac.cr/team/tito-maldonado-phd/) for helping with the EC-Earth3 support.
+
 <img src="https://github.com/lzhenn/cmip6-to-wrfinterm/blob/master/fig/EC_EARTH3_skintemp_sample_00.png" alt="drawing" style="width:400px;"/>
 <img src="https://github.com/lzhenn/cmip6-to-wrfinterm/blob/master/fig/EC_EARTH3_skintemp_sample_06.png" alt="drawing" style="width:400px;"/>
 
