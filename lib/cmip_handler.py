@@ -138,6 +138,13 @@ class CMIPHandler(object):
             
             utils.write_log(print_prefix+'Loading '+fn)
             ds=xr.open_dataset(fn)
+            if (lvlmark=='Lev' and itm['type']=='3d'):
+                if not(hasattr(self,'ap')):
+                    self.ap=ds['ap'].values
+                    self.b=ds['b'].values
+                    self.ps=ds['ps'].sel(
+                    time=slice(self.etl_strt_time,self.etl_end_time))
+
             self.ds[varname]=ds[varname].sel(
                 time=slice(self.etl_strt_time,self.etl_end_time))
             ds.close()
@@ -150,47 +157,56 @@ class CMIPHandler(object):
         for idx, itm in self.vtable.iterrows():
             varname=itm['src_v']
             lvltype=itm['type']
-            
+            lvlmark=itm['lvlmark']
+            utils.write_log(
+                print_prefix+'Interpolating '+varname+',lvltype='+lvltype+',lvlmark='+lvlmark)
+
             # repeat level to pad missing soil layers
             if lvltype == '2d-soilr':
                 continue
 
-            ds=self.ds[varname].sel(time=tf)
+            da=self.ds[varname].sel(time=tf, method='nearest')
           
+           
             if varname =='mrsos':
-                ds.values=ds.values*1e-2
+                da.values=da.values*1e-2
 
             if varname =='tos' and itm['units']=='degC':
-                ds.values=ds.values+273.15
+                da.values=da.values+273.15
                 itm['units']='K'
 
             if lvltype=='3d':
-                self.outfrm[varname]=ds.interp(lat=new_lat, lon=new_lon, plev=new_lv,
+                if lvlmark == 'Lev':
+                    # interpolate from hybrid to pressure level 
+                    da=hybrid2pressure(
+                        da,self.ap,self.b,self.ps.sel(time=tf, method='nearest'))
+            
+                self.outfrm[varname]=da.interp(lat=new_lat, lon=new_lon, plev=new_lv,
                         method='linear',kwargs={"fill_value": "extrapolate"})
             elif lvltype=='2d':
                 if varname=='tos':
-                    ocn_da=ds.interpolate_na(dim='i',
+                    ocn_da=da.interpolate_na(dim='i',
                         method='linear',fill_value="extrapolate")
                     ocn_da=ocn_da.interpolate_na(dim='j',
                         method='linear',fill_value="extrapolate")
                     grid_x,grid_y=np.meshgrid(new_lon,new_lat)
                     values=ocn_da.values
                     points=np.array(
-                        [ds.longitude.values.flatten(),ds.latitude.values.flatten()]).T
+                        [da.longitude.values.flatten(),da.latitude.values.flatten()]).T
                     # here use nearest as linear will cause some nan
                     grid_z0 = griddata(
                         points, values.flatten(), 
                         (grid_x, grid_y), method='nearest')  
                     self.outfrm[varname]=grid_z0
                 else:
-                    self.outfrm[varname]=ds.interp(lat=new_lat, lon=new_lon,
+                    self.outfrm[varname]=da.interp(lat=new_lat, lon=new_lon,
                         method='linear',kwargs={"fill_value": "extrapolate"})
             
             elif lvltype=='2d-soil':
-                ds=ds.interpolate_na(
+                da=da.interpolate_na(
                     dim="lon", method="linear",fill_value="extrapolate")
                 
-                self.outfrm[varname]=ds.interp(lat=new_lat, lon=new_lon,
+                self.outfrm[varname]=da.interp(lat=new_lat, lon=new_lon,
                         method='linear',kwargs={"fill_value": "extrapolate"})
 
     
@@ -231,6 +247,26 @@ class CMIPHandler(object):
        
         wrf_mid.close()
 
-
+def hybrid2pressure(da,ap,b,ps):
+    '''
+    Convert hybrid level to pressure level
+    '''
+    #print(da.values.shape)
+    nz, nlat, nlon=da.values.shape
+    da_new=da.copy()[0:len(new_lv),:,:]
+    da_new=da_new.rename({'lev':'plev'})
+    da_new=da_new.assign_coords({'plev':new_lv})
+    
+    pa3d=np.broadcast_to(ps.values, (nz, nlat, nlon))
+    pa3d=np.swapaxes(pa3d,0,2) 
+    # get hybrid level
+    pa3d=pa3d*b+ap
+    for idz, plv in enumerate(new_lv):
+        idx2d=np.sum(np.where(pa3d<plv,0,1),axis=2)-1
+        idx2d=np.where(idx2d<0,0,idx2d)
+        idx3d=np.broadcast_to(idx2d.T, (nz, nlat, nlon))
+        temp=np.take_along_axis(da.values, idx3d, axis=0)
+        da_new.values[idz,:,:]=temp[0,:,:]
+    return da_new
 if __name__ == "__main__":
     pass

@@ -1,0 +1,50 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 1,
+ start_date = '1979-01-01_00:00:00',
+ end_date   = '1979-01-01_06:00:00',
+ interval_seconds = 21600
+ io_form_geogrid = 2,
+/
+
+&geogrid
+ parent_id         =   1,   1,    2,
+ parent_grid_ratio =   1,   3,    3,
+ i_parent_start    =   1,  92,  330,
+ j_parent_start    =   1,  72,   94,
+ e_we              = 311, 799, 1000,
+ e_sn              = 117, 559,  730,
+ !
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ ! The default datasets used to produce the MAXSNOALB and ALBEDO12M
+ ! fields have changed in WPS v4.0. These fields are now interpolated
+ ! from MODIS-based datasets.
+ !
+ ! To match the output given by the default namelist.wps in WPS v3.9.1,
+ ! the following setting for geog_data_res may be used:
+ !
+ ! geog_data_res = 'maxsnowalb_ncep+albedo_ncep+default', 'maxsnowalb_ncep+albedo_ncep+default', 
+ !
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ !
+ geog_data_res     = 'default','default','default',
+ dx = 25000,
+ dy = 25000,
+ map_proj = 'mercator',
+ ref_lat   =  13.0,
+ ref_lon   = -60.0,
+ truelat1  =  13.0,
+ truelat2  =  13.0,
+ stand_lon = -60.0,
+ geog_data_path = '/home/pathsys/static_data_v2/WRF-4.0/WPS_GEOG.v10.20180222/' /
+/
+
+&ungrib
+ out_format = 'WPS',
+ prefix = 'FILE',
+/
+
+&metgrid
+ fg_name = 'CMIP6-EC-EARTH3','CMIP6-EC-EARTH3-PLEV','CMIP6-EC-EARTH3-SURF3H','CMIP6-EC-EARTH3-SURF6H','CMIP6-EC-EARTH3-SST',
+ io_form_metgrid = 2, 
+/

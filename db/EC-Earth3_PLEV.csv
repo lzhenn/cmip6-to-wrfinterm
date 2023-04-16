@@ -1,0 +1,3 @@
+src_v,aim_v,units,type,lvlmark,desc
+zg,GHT,m,3d,PlevPt, 3-d geopotential height
+psl,PMSL,Pa,2d,PlevPt, Mean sea-level pressure

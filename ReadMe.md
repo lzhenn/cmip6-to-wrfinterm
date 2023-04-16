@@ -1,7 +1,7 @@
 # cmip6-to-wrfinterm
 
 **CMIP6-to-WRFInterim** uses pure python implementation to convert CMIP6 sub-daily output into WRF intermediate files, which are used to drive the WRF model for regional dynamical downscaling usage.
-Currently, only **MPI-ESM-1-2-HR** model has been teseted in **historical run and SSP1/2/5 scenarios**, you may need proper modifications for other model convension.
+Currently, **MPI-ESM-1-2-HR** and **EC-Earth3** models have been teseted, you may need proper modifications for other model convension.
 
 <img src="https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/sample_skintemp.png" alt="drawing" style="width:400px;"/><img src="https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/skintemp006hr.png" alt="drawing" style="width:400px;"/>
 
@@ -18,6 +18,7 @@ pip install -r requirements.txt
 
 ## Quick start
 
+### MPI-ESM-1-2-HR (Default)
 ```bash
 python3 run_c2w.py
 ```
@@ -26,9 +27,31 @@ If you successfully run the above command (it is okay to see some FutureWarnings
 (See [Troubleshooting](https://github.com/lzhenn/cmip6-to-wrfinterm#troubleshooting) if you are a Windows Subsystem user.)
 Copy or link the two intermidiate files to your WPS folder, prepare your **geo_em** files and setup your `namelist.wps` properly, now you are ready to run `metgrid.exe` and the following WRF procedures.
 
-There is a simple example of `namelist.wps` and `namelist.input` covering the East Asian region in the `./sample` folder for testing.
+There is a simple example of `namelist.wps` and `namelist.input` covering the East Asian region in the `./sample/MPI-ESM-1-2-HR` folder for testing.
 
 If you run the sample case successfully, you are expected to see snapshots of the skin temperature in the initial condition and after 6-hour WRFv4.3 run as shown as above.
+
+### EC-Earth3
+```bash
+cd conf
+cp config.ini config.ini.MPI-ESM1-2-HR
+cp config.ini.EC-Earth3 config.ini 
+cd ..
+python3 run_c2w.py
+```
+Now you will find output files in `./output` folder with prefix `EC-EARTH3-SURF3H:`. Next, we need to generate other variables in different frequency / grids. Please follow the table below to modify the `config.ini` file, and execute `run_c2w.py` after modification according to each row.
+| vtable_name     | grid_flag | cmip_strt_ts | cmip_end_ts | cmip_frq | output_prefix    |
+| ----            | ----      | ----         | ----        | ----     | ----             |
+|EC-Earth3_SURF3H | gr        | 197901010000 | 197912312100| 3        | EC-EARTH3-SURF3H |
+|EC-Earth3_SURF6H | gr        | 197901010300 | 197912312100| 6        | EC-EARTH3-SURF6H |
+|EC-Earth3_LEV    | gr        | 197901010000 | 197912311800| 6        | EC-EARTH3        | 
+|EC-Earth3_PLEV   | gr        | 197901010000 | 197912311800| 6        | EC-EARTH3-PLEV   |
+|EC-Earth3_SST    | gn        | 197901010300 | 198001010000| 3        | EC-EARTH3-SST    | 
+
+There is a simple example of `namelist.wps` and `namelist.input` covering the East Asian region in the `./sample/EC-Earth3` folder for testing.
+
+If you run the sample case successfully, you are expected to see snapshots of the skin temperature in the initial condition and after 6-hour WRFv4.3 run as shown as below.
+
 
 
 ## Troubleshooting

@@ -1,0 +1,6 @@
+src_v,aim_v,units,type,lvlmark,desc
+ta,TT,K,3d,Lev,3-d air temperature
+hus,SPECHUMD,kg kg-1,3d,Lev,3-d specific humidity
+ua,UU,m s-1,3d,Lev, 3-d wind u-component
+va,VV,m s-1,3d,Lev, 3-d wind v-component
+ps,PSFC,Pa,2d,Lev, Surface pressure

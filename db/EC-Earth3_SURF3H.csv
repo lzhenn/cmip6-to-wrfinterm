@@ -1,0 +1,7 @@
+src_v,aim_v,units,type,lvlmark,desc
+ts,SKINTEMP, K,2d,PlevPt, Skin temperature
+huss,SPECHUMD, kg kg-1,2d,PlevPt, 2-m relative humidity
+mrsos,SM000010, m3/m-3,2d-soil,PlevPt, 0-10 cm soil moisture
+tslsi,ST000010,K,2d-soil,PlevPt, 0-10 cm soil temp 
+mrsos,SM010200, m3/m-3,2d-soilr,PlevPt, 10-200 cm soil moisture
+tslsi,ST010200,K,2d-soilr,PlevPt, 10-200 cm soil temp 

@@ -1,0 +1,19 @@
+[INPUT]
+input_root=/home/lzhenn/array74/workspace/cmip6-to-wrfinterm/sample/EC-Earth3/ 
+model_name=EC-Earth3
+# use @model will copy the model_name 
+vtable_name=@model_SURF3H
+exp_id = historical 
+esm_flag=r1i1p1f1
+grid_flag=gr
+#YYYYMMDDHHMM
+cmip_strt_ts =197901010000
+cmip_end_ts =197912312100
+# In hours
+cmip_frq=3
+[OUTPUT]
+#YYYYMMDDHHMM, please seperate your ETL processes if request very long-term simulation
+etl_strt_ts =197901010000
+etl_end_ts = 197901010600
+output_root = ./output/
+output_prefix=CMIP6-EC-EARTH3-SURF3H

@@ -1,0 +1,4 @@
+src_v,aim_v,units,type,lvlmark,desc
+tas,TT,K,2d,PlevPt, 2-m temperature
+uas,UU,m s-1,2d,PlevPt, 10m wind u-component
+vas,VV,m s-1,2d,PlevPt, 10m wind v-component
