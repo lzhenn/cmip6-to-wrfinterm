@@ -39,7 +39,7 @@ cp config.ini.EC-Earth3 config.ini
 cd ..
 python3 run_c2w.py
 ```
-Now, you will find output files in the `./output` folder with the prefix `EC-EARTH3-SURF3H:`. Next, we need to generate additional variables with different frequencies and grids. Please follow the table below to modify the `config.ini` file. each time after making modifications according one row, execute `run_c2w.py`.
+Now, you will find output files in the `./output` folder with the prefix `EC-EARTH3-SURF3H:`. Next, we need to generate additional variables with different frequencies and grids. Please follow the table below to modify the `config.ini` file. Each time after making modifications according one row, execute `run_c2w.py`.
 
 | vtable_name     | grid_flag | cmip_strt_ts | cmip_end_ts | cmip_frq | output_prefix    |
 | ----            | ----      | ----         | ----        | ----     | ----             |
