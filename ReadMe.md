@@ -4,7 +4,7 @@
 
 | Model Name      | historical | SSP126   | SSP245   | SSP585   |
 | ----            | ----       | ----     | ----     | ----     | 
-|MPI-ESM-1-2-HR   | $\color{green}{&#10004;} $   | &#10004; | &#10004; | &#10004; | 
+|MPI-ESM-1-2-HR   | <font color='green'>&#10004;</font>   | &#10004; | &#10004; | &#10004; | 
 |EC-Earth3        | &#10004;*  |          |          |          | 
 
 <font size=5; color='gray'>* Limited test </font>
