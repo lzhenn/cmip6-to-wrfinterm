@@ -4,8 +4,9 @@
 
 | Model Name      | historical | SSP126   | SSP245   | SSP585   |
 | ----            | ----       | ----     | ----     | ----     | 
-|MPI-ESM-1-2-HR   | &#10004;   | &#10004; | &#10004; | &#10004; | 
+|MPI-ESM-1-2-HR   | $\color{green}{&#10004;} $   | &#10004; | &#10004; | &#10004; | 
 |EC-Earth3        | &#10004;*  |          |          |          | 
+
 <font size=5; color='gray'>* Limited test </font>
 
 **CMIP6-to-WRFInterim** uses pure python implementation to convert CMIP6 sub-daily output into WRF intermediate files, which are used to drive the WRF model for regional dynamical downscaling usage.
