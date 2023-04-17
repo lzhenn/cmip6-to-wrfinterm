@@ -1,6 +1,9 @@
 # cmip6-to-wrfinterm
 
-## Support GCMs
+**CMIP6-to-WRFInterim** uses pure python implementation to convert CMIP6 sub-daily output into WRF intermediate files, which are used to drive the WRF model for regional dynamical downscaling usage.
+Current supported models are listed below. If you hope to use other models, proper modifications are needed.
+
+## Supported GCMs
 
 | Model Name      | historical    | SSP126   | SSP245   | SSP585   |
 | ----            | ----          | ----     | ----     | ----     | 
@@ -8,9 +11,6 @@
 |EC-Earth3        | &#10004;[^1]  |          |          |          | 
 
 [^1]: Only done limited tests.
-
-**CMIP6-to-WRFInterim** uses pure python implementation to convert CMIP6 sub-daily output into WRF intermediate files, which are used to drive the WRF model for regional dynamical downscaling usage.
-Currently, **MPI-ESM-1-2-HR** and **EC-Earth3** models have been teseted, you may need proper modifications for other model convension.
 
 <img src="https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/sample_skintemp.png" alt="drawing" style="width:400px;"/><img src="https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/skintemp006hr.png" alt="drawing" style="width:400px;"/>
 
