@@ -1,8 +1,9 @@
 # cmip6-to-wrfinterm
 
-**(Due to personal issues, I may not be able to answer your questions via email promptly, please using GitHub [issues](https://github.com/lzhenn/cmip6-to-wrfinterm/issues) instead.)**
 **CMIP6-to-WRFInterim** uses pure python implementation to convert CMIP6 sub-daily output into WRF intermediate files, which are used to drive the WRF model for regional dynamical downscaling usage.
 Current supported models are listed below. If you hope to use other models, proper modifications are needed.
+
+**(Due to personal issues, I may not be able to answer your questions via email promptly, please using GitHub [issues](https://github.com/lzhenn/cmip6-to-wrfinterm/issues) instead.)**
 
 ## Supported GCMs
 
