@@ -7,12 +7,14 @@ Current supported models are listed below. If you hope to use other models, prop
 
 ## Supported GCMs
 
-| Model Name      | historical    | SSP126   | SSP245   | SSP585   |
-| ----            | ----          | ----     | ----     | ----     | 
-|MPI-ESM-1-2-HR   | &#10004;      | &#10004; | &#10004; | &#10004; | 
-|EC-Earth3        | &#10004;[^1]  |          |          |          | 
+| Model Name                    | historical    | SSP126   | SSP245   | SSP585   |
+| ----                          | ----          | ----     | ----     | ----     | 
+|MPI-ESM-1-2-HR                 | &#10004;      | &#10004; | &#10004; | &#10004; | 
+|EC-Earth3                      | &#10004;[^1]  |          |          |          | 
+|Bias-corrected Multi Model [^2]|               | N/A      | &#10004; | &#10004; | 
 
 [^1]: Only done limited tests.
+[^2]: https://www.scidb.cn/en/detail?dataSetId=791587189614968832 
 
 <img src="https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/sample_skintemp.png" alt="drawing" style="width:400px;"/><img src="https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/skintemp006hr.png" alt="drawing" style="width:400px;"/>
 
