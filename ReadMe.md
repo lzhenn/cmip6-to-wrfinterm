@@ -46,11 +46,7 @@ If you run the sample case successfully, you are expected to see snapshots of th
 
 ### EC-Earth3
 ```bash
-cd conf
-cp config.ini config.ini.MPI-ESM1-2-HR
-cp config.ini.EC-Earth3 config.ini 
-cd ..
-python3 run_c2w.py
+python3 run_c2w.py -m EC-Earth3
 ```
 Now, you will find output files in the `./output` folder with the prefix `EC-EARTH3-SURF3H:`. Next, we need to generate additional variables with different frequencies and grids. Please follow the table below to modify the `config.ini` file. Each time after making modifications according one row, execute `run_c2w.py`.
 
@@ -68,6 +64,12 @@ If you run the sample case successfully, you are expected to see snapshots of th
 
 <img src="https://github.com/lzhenn/cmip6-to-wrfinterm/blob/master/fig/EC_EARTH3_skintemp_sample_00.png" alt="drawing" style="width:400px;"/>
 <img src="https://github.com/lzhenn/cmip6-to-wrfinterm/blob/master/fig/EC_EARTH3_skintemp_sample_06.png" alt="drawing" style="width:400px;"/>
+
+### BCMM
+```bash
+python3 run_c2w.py -m BCMM
+```
+
 
 ## Troubleshooting
 

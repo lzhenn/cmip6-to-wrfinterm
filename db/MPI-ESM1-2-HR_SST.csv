@@ -1,2 +1,2 @@
 src_v,aim_v,units,type,lvlmark,desc
-tos,SST,degC,2d,None,sea surface temperature
+tos,SST,degC,ocn2d,None,sea surface temperature

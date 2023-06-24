@@ -1,0 +1,11 @@
+src_v,aim_v,units,type,lvlmark,desc
+tsl,ST000010,K,2d-soil,PlevPt, 0-10 cm soil temp 
+tsl,ST010040,K,2d-soil,PlevPt, 10-40 cm soil temp 
+tsl,ST040100,K,2d-soil,PlevPt, 40-100 cm soil temp 
+tsl,ST100200,K,2d-soil,PlevPt, 100-200 cm soil temp 
+mrsol,SM000010, m3/m-3,2d-soil,PlevPt, 0-10 cm soil moisture
+mrsol,SM010040, m3/m-3,2d-soil,PlevPt, 10-40 cm soil moisture
+mrsol,SM040100, m3/m-3,2d-soil,PlevPt, 40-100 cm soil moisture
+mrsol,SM100200, m3/m-3,2d-soil,PlevPt, 100-200 cm soil moisture
+tas,TT,K,2d,PlevPt, 2-m temperature
+tsl,SKINTEMP, K,2d,PlevPt, Skin temperature

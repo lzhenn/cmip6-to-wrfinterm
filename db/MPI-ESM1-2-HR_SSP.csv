@@ -12,7 +12,7 @@ ts,SKINTEMP, K,2d,PlevPt, Skin temperature
 ts,SST, K,2d,PlevPt, sea surface temperature
 psl,PMSL,Pa,2d,PlevPt, Mean sea-level pressure
 huss,SPECHUMD, kg kg-1,2d,PlevPt, 2-m relative humidity
-mrsos,SM000010, m3/m-3,2d-soil,PlevPt, 0-10 cm soil moisture
+mrsos,SM000010, kg/m-3,2d-soil,PlevPt, 0-10 cm soil moisture
 tsl,ST000010,K,2d-soil,PlevPt, 0-10 cm soil temp 
-mrsos,SM010200, m3/m-3,2d-soilr,PlevPt, 10-200 cm soil moisture
+mrsos,SM010200, kg/m-3,2d-soilr,PlevPt, 10-200 cm soil moisture
 tsl,ST010200,K,2d-soilr,PlevPt, 10-200 cm soil temp 
