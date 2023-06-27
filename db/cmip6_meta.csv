@@ -1,4 +1,6 @@
 model_name,scenario,variable_group,naming_convention,var_frq
 BCMM,ssp,ATM,atm_SCENARIO_YYYY_MM.nc4,6h*
 BCMM,ssp,LND,lnd.SCENARIO.YYYYMM.nc,1M
+MPI-ESM1-2-HR,ssp,SSP,CMIP6ATMLND,6h*
+MPI-ESM1-2-HR,hist,HIST,CMIP6ATMLND,6h*
 EC-Earth3,ssp,LEV,,6h

@@ -9,12 +9,12 @@ Current supported models are listed below. If you hope to use other models, prop
 
 | Model Name                    | historical    | SSP126   | SSP245   | SSP585   |
 | ----                          | ----          | ----     | ----     | ----     | 
+|Bias-corrected Multi-Model [^1]|               | N/A      | &#10004; | &#10004; | 
 |MPI-ESM-1-2-HR                 | &#10004;      | &#10004; | &#10004; | &#10004; | 
-|EC-Earth3                      | &#10004;[^1]  |          |          |          | 
-|Bias-corrected Multi Model [^2]|               | N/A      | &#10004; | &#10004; | 
+|EC-Earth3                      | &#10004;[^2]  |          |          |          | 
 
-[^1]: Only done limited tests.
-[^2]: https://www.scidb.cn/en/detail?dataSetId=791587189614968832 
+[^1]: https://www.scidb.cn/en/detail?dataSetId=791587189614968832 
+[^2]: Only done limited tests.
 
 <img src="https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/sample_skintemp.png" alt="drawing" style="width:400px;"/><img src="https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/skintemp006hr.png" alt="drawing" style="width:400px;"/>
 
@@ -36,13 +36,20 @@ pip install -r requirements.txt
 python3 run_c2w.py
 ```
 
-If you successfully run the above command (it is okay to see some FutureWarnings), you should see `CMIP6:2100-01-02_00` and `CMIP6:2100-01-02_00` in the `./output` folder.
+Please use Unix-like (Linux) system to run the above command, and it is okay to see some FutureWarnings. If successful, you should see `CMIP6:2100-01-02_00` and `CMIP6:2100-01-02_06` in the `./output` folder.
 (See [Troubleshooting](https://github.com/lzhenn/cmip6-to-wrfinterm#troubleshooting) if you are a Windows Subsystem user.)
-Copy or link the two intermidiate files to your WPS folder, prepare your **geo_em** files and setup your `namelist.wps` properly, now you are ready to run `metgrid.exe` and the following WRF procedures.
+
+Copy or link the two intermidiate files to your WPS folder, prepare your **geo_em** files and setup your `namelist.wps` properly, now you are ready to run `metgrid.exe` and the following WRF procedures. 
+You can also modify `wps_wrf_pipeline.sh` to automate the procedure from `metgrid.exe` to `wrf.exe` if you are on a computing node.
 
 There is a simple example of `namelist.wps` and `namelist.input` covering the East Asian region in the `./sample/MPI-ESM-1-2-HR` folder for testing.
 
 If you run the sample case successfully, you are expected to see snapshots of the skin temperature in the initial condition and after 6-hour WRFv4.3 run as shown as above.
+
+### BCMM
+```bash
+python3 run_c2w.py -m BCMM
+```
 
 ### EC-Earth3
 ```bash
@@ -65,10 +72,6 @@ If you run the sample case successfully, you are expected to see snapshots of th
 <img src="https://github.com/lzhenn/cmip6-to-wrfinterm/blob/master/fig/EC_EARTH3_skintemp_sample_00.png" alt="drawing" style="width:400px;"/>
 <img src="https://github.com/lzhenn/cmip6-to-wrfinterm/blob/master/fig/EC_EARTH3_skintemp_sample_06.png" alt="drawing" style="width:400px;"/>
 
-### BCMM
-```bash
-python3 run_c2w.py -m BCMM
-```
 
 
 ## Troubleshooting

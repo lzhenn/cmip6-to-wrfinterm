@@ -8,8 +8,7 @@ ps,PSFC,Pa,2d,Lev, Surface pressure
 tas,TT,K,2d,PlevPt, 2-m temperature
 uas,UU,m s-1,2d,PlevPt, 10m wind u-component
 vas,VV,m s-1,2d,PlevPt, 10m wind v-component
-ts,SKINTEMP, K,2d,PlevPt, Skin temperature
-ts,SST, K,2d,PlevPt, sea surface temperature
+ts,SKINTEMP,K,2d,PlevPt, Skin temperature
 psl,PMSL,Pa,2d,PlevPt, Mean sea-level pressure
 huss,SPECHUMD, kg kg-1,2d,PlevPt, 2-m relative humidity
 mrsos,SM000010, kg/m-3,2d-soil,PlevPt, 0-10 cm soil moisture

@@ -50,12 +50,12 @@ class CMIPHandler(object):
         self.in_root=in_cfg['input_root']
         self.out_root=out_cfg['output_root']
 
-        self._build_meta()
+        self._build_meta(in_cfg)
         self._load_cmip_data()        
         self.out_slab=utils.gen_wrf_mid_template()
 
 
-    def _build_meta(self):
+    def _build_meta(self, in_cfg):
         '''
         Build metadata for model and scenario
         '''
@@ -72,43 +72,60 @@ class CMIPHandler(object):
 
         # build file names
         self.fn_lst=[]
+        frq='6h'
         for idx, row in tgt_rows.iterrows():
-            # get file name
-            fn=row['naming_convention'].replace('SCENARIO',self.scenario)
-            fn=fn.replace('YYYY',self.etl_strt_time.strftime('%Y'))
-            fn=fn.replace('MM',self.etl_strt_time.strftime('%m'))
-            self.fn_lst.append(self.in_root+'/'+fn)
-            # get atm_frq
+            
+            # get main atm_frq
             if '*' in row['var_frq']:
                 frq=row['var_frq'].replace('*','')
                 self.out_time_series=pd.date_range(
                     start=self.etl_strt_time, end=self.etl_end_time, freq=frq)
-    
+
+            # get file name
+            if self.model_name == 'BCMM':
+                fn=row['naming_convention'].replace('SCENARIO',self.scenario)
+                fn=fn.replace('YYYY',self.etl_strt_time.strftime('%Y'))
+                fn=fn.replace('MM',self.etl_strt_time.strftime('%m'))
+            else:
+                # CMIP6 regrular
+                vtable_fn=f"{self.model_name}_{row['variable_group']}"
+                df_vtable=pd.read_csv('./db/'+vtable_fn+'.csv')
+                for idy, itm in df_vtable.iterrows():
+                    varname=itm['src_v']
+                    lvlmark=itm['lvlmark']
+                    fn=varname+'_'+frq+'r'+lvlmark+'_'+self.model_name
+                    fn=fn+'_'+self.scenario+'_'+in_cfg['esm_flag']+'_'+in_cfg['grid_flag']
+                    fn+='_'+in_cfg['cmip_strt_ts']+'-'+in_cfg['cmip_end_ts']+'.nc'
+                    self.fn_lst.append(self.in_root+'/'+fn)
     def _load_cmip_data(self):
         '''
         Load CMIP data according to file convension
         ''' 
-
         # init empty cmip container dict
         self.ds, self.outfrm={},{}
-        
+        idf=0 # file index for CMIP6 files
         for idx, irow in self.meta_rows.iterrows():
             vtable_fn=f"{self.model_name}_{irow['variable_group']}"
             df_vtable=pd.read_csv('./db/'+vtable_fn+'.csv')
             if self.model_name=='BCMM':
-                ds=xr.open_dataset(self.fn_lst[idx])
                 utils.write_log(print_prefix+'Loading '+self.fn_lst[idx])
+                ds=xr.open_dataset(self.fn_lst[idx])
             for idy, itm in df_vtable.iterrows():
                 varname=itm['src_v']
                 lvlmark=itm['lvlmark']
                 if lvlmark == 'None':
                     lvlmark=''
+                
+                # repeated usage in vtable will not be reloaded
                 if varname in self.ds:
                     continue
-
+                
+                # CMIP6 regular
                 if not(self.model_name=='BCMM'):
-                    pass
-
+                    utils.write_log(print_prefix+'Loading '+self.fn_lst[idx])
+                    ds=xr.open_dataset(self.fn_lst[idf])
+                    idf=idf+1
+                    
                 # need interpolation coefficients
                 if (lvlmark=='Lev' and itm['type']=='3d'):
                     if not(hasattr(self,'ap')):
@@ -128,7 +145,10 @@ class CMIPHandler(object):
                 if (lvlmark=='PlevPt' and itm['type']=='3d'):
                     if 'lev' in self.ds[varname].coords:
                         self.ds[varname] = self.ds[varname].rename({'lev': 'plev'})
-            ds.close()
+                if not(self.model_name=='BCMM'):
+                    ds.close()
+            if self.model_name=='BCMM':
+                ds.close()
 
     def parse_data(self, tf):
         '''
@@ -175,7 +195,7 @@ class CMIPHandler(object):
                         dim="lon", method="linear",fill_value="extrapolate")    
                     self.outfrm[varname]=da.interp(lat=utils.LATS, lon=utils.LONS,
                         method='linear',kwargs={"fill_value": "extrapolate"})
- 
+                '''
                 elif lvltype=='ocn2d':
                     ocn_da=da.interpolate_na(dim='i',
                         method='linear',fill_value="extrapolate")
@@ -190,7 +210,7 @@ class CMIPHandler(object):
                         points, values.flatten(), 
                         (grid_x, grid_y), method='nearest')  
                     self.outfrm[varname]=grid_z0
-    
+                '''
     def write_wrfinterm(self, tf, tgt):
         if tgt=='main':
             out_fn=self.out_root+'/'+self.model_name+':'+tf.strftime('%Y-%m-%d_%H')
@@ -238,7 +258,11 @@ class CMIPHandler(object):
                 elif lvltype=='2d-soil':
                     index = next(
                         (i for i, s in enumerate(utils.SOIL_LVS) if s in itm['aim_v']), None)
-                    out_dic['SLAB']=self.outfrm[varname].values[:,index,:,:]
+                    if self.model_name == 'BCMM':
+                        out_dic['SLAB']=self.outfrm[varname].values[:,index,:,:]
+                    else:
+                        out_dic['SLAB']=self.outfrm[varname].values
+
                 utils.write_record(wrf_mid, out_dic)
         wrf_mid.close()
 
