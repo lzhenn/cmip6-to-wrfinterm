@@ -86,6 +86,7 @@ class CMIPHandler(object):
                 fn=row['naming_convention'].replace('SCENARIO',self.scenario)
                 fn=fn.replace('YYYY',self.etl_strt_time.strftime('%Y'))
                 fn=fn.replace('MM',self.etl_strt_time.strftime('%m'))
+                self.fn_lst.append(self.in_root+'/'+fn)
             else:
                 # CMIP6 regrular
                 vtable_fn=f"{self.model_name}_{row['variable_group']}"

@@ -1,4 +1,17 @@
 # cmip6-to-wrfinterm
+- [cmip6-to-wrfinterm](#cmip6-to-wrfinterm)
+  - [Supported GCMs](#supported-gcms)
+  - [Installation](#installation)
+  - [Quick start](#quick-start)
+    - [MPI-ESM-1-2-HR (Default)](#mpi-esm-1-2-hr-default)
+    - [BCMM](#bcmm)
+    - [EC-Earth3](#ec-earth3)
+  - [Usage](#usage)
+    - [Modify config.ini (`MPI-ESM1-2-HR`)](#modify-configini-mpi-esm1-2-hr)
+    - [\[OPTIONAL\] Modify Vtable](#optional-modify-vtable)
+    - [\[Advanced\] cmip\_handler.py](#advanced-cmip_handlerpy)
+  - [Troubleshooting](#troubleshooting)
+    - [\[Appendix\] Fetch Input Files](#appendix-fetch-input-files)
 
 **CMIP6-to-WRFInterim** uses pure python implementation to convert CMIP6 sub-daily output into WRF intermediate files, which are used to drive the WRF model for regional dynamical downscaling usage.
 Current supported models are listed below. If you hope to use other models, proper modifications are needed.
@@ -40,9 +53,8 @@ Please use Unix-like (Linux) system to run the above command, and it is okay to 
 (See [Troubleshooting](https://github.com/lzhenn/cmip6-to-wrfinterm#troubleshooting) if you are a Windows Subsystem user.)
 
 Copy or link the two intermidiate files to your WPS folder, prepare your **geo_em** files and setup your `namelist.wps` properly, now you are ready to run `metgrid.exe` and the following WRF procedures. 
-You can also modify `wps_wrf_pipeline.sh` to automate the procedure from `metgrid.exe` to `wrf.exe` if you are on a computing node.
-
 There is a simple example of `namelist.wps` and `namelist.input` covering the East Asian region in the `./sample/MPI-ESM-1-2-HR` folder for testing.
+You can also modify `wps_wrf_pipeline.sh` to automate the procedure from `metgrid.exe` to `wrf.exe` if you are operating on a computing node.
 
 If you run the sample case successfully, you are expected to see snapshots of the skin temperature in the initial condition and after 6-hour WRFv4.3 run as shown as above.
 
@@ -50,6 +62,7 @@ If you run the sample case successfully, you are expected to see snapshots of th
 ```bash
 python3 run_c2w.py -m BCMM
 ```
+This will use [the Bias-corrected CMIP6 Multi-model dataset](https://www.scidb.cn/en/detail?dataSetId=791587189614968832). 
 
 ### EC-Earth3
 ```bash
@@ -74,57 +87,47 @@ If you run the sample case successfully, you are expected to see snapshots of th
 
 
 
-## Troubleshooting
-
-**(Dec 19, 2022)**: Lack of suitable source variables from CMIP6 datasets to drive the dynamical downscaling are common. For example, the available 6-hour `ts` variable in SSP is missing in historical run of `MPI-ESM1-2-HR` output. We cannot directly map the `SST` by `ts`.
-One trade-off is using the `tas` to represent both the land surface and sea surface temperature, just as you could find in the `MPI-ESM1-2-HR_HIST.csv` vtable. While this is not a good strategy. 
-For accurate representation of sea surface temperature, you may need to use 3-hour `tos` variable and set `cmip_frq=3` in `config.ini` to generate the 3-hour SST in historical run (see the Vtable with suffix `SST`). Make sure to use a different `output_prefix` such as `SST`. (Thanks [Dr. Paul Nalon from ICHEC](https://www.ichec.ie/staff/paul-nolan-phd) and [Dr. Sium Gebremariam from PSU](http://www.met.psu.edu/people/stg5265) helping with this.) 
-
-**(Nov 27, 2022)**: According to feedback from several users, if you are using Windows Subsystem for Linux (WSL, typically Ubuntu from Microsoft Store), please note Windows does **NOT** support colon ":" in the file name.
-You may rename the output file name or try a pure Linux platform.
-
 ## Usage
 
-### Modify config.ini
+### Modify config.ini (`MPI-ESM1-2-HR`)
 
-When you properly download the `MPI-ESM1-2-HR` data, First edit the `./conf/config.ini` file properly.
+When you properly download the `MPI-ESM1-2-HR` data, First edit the `./conf/config.MPI-ESM1-2-HR.ini` file properly.
 
 ``` python
 [INPUT]
-input_root=./sample/ 
+input_root=./sample/MPI-ESM1-2-HR/
 model_name=MPI-ESM1-2-HR
-vtable_name=@model
-exp_id = ssp585
+scenario = ssp585
 esm_flag=r1i1p1f1
 grid_flag=gn
 #YYYYMMDDHHMM
 cmip_strt_ts = 210001020000
 cmip_end_ts = 210001020600
-# In hours
-cmip_frq=6
 
 [OUTPUT]
 #YYYYMMDDHHMM, please seperate your ETL processes if request very long-term simulation
 etl_strt_ts = 210001020000
 etl_end_ts = 210001020600
 output_root = ./output/
-output_prefix=CMIP6 
 ``` 
+
 * `[INPUT]['input_root']` is the root directory of the CMIP6 data, here it points to the `./sample/` folder.
 * `[INPUT]['model_name']` is the name of the model. Now only the `MPI-ESM-1-2-HR` model is supported. If you plan to use other models, you need to setup your own variable mapping table (see below).
-* `[INPUT]['vtable_name']` Will assign which Vtable to use. This item will guide the script to read the corresponding variable mapping table in `./db/`. The seperation of model_name and vtable_name will be useful if you hope to replace some variables in the same model.
 
-* `[INPUT]['exp_id']` `['esm_flag']` `['grid_flag']` are used to form the netCDF file name.
+* `[INPUT]['scenario']` `['esm_flag']` `['grid_flag']` are used to form the netCDF file names.
 * `[INPUT]['cmip_strt_ts']` and `[INPUT]['cmip_end_ts']` are the start and end time of the CMIP6 data.
 * `[OUTPUT]['etl_strt_ts']` and `[OUTPUT]['etl_end_ts']` are the start and end time of your desired ETL period.
 
 After you have edited the `config.ini` file, you can run the script again for your desired period. The intemediate files will be generated in the `[OUTPUT]['output_root']` folder. 
-Note that for `MPI-ESM-1-2-HR`, the soil properties between 10-200cm is not provided by the model and we overwrote it by 0-10cm soil properties, a special type mark of `2d-soilr` is provided in the varaible mapping table. You may need long-term (~1-month) spin-up run if your research requests accurate soil properties.
 
+Note that for `MPI-ESM1-2-HR`, the soil properties between 10-200cm is not provided by the model and we overwrote it by 0-10cm soil properties, a special type mark of `2d-soilr` is provided in the varaible mapping table. You may need long-term (~1-month) spin-up run if your research requests accurate soil properties.
 
-### [OPTIONAL] Modify ./db/${MODEL_NAME}.csv
+For historical run, `MPI-ESM1-2-HR` do not provide skin temp output in atmospheric dataset, we use `tas` here to represent the skin temp, which is acceptable over land as the land properties are prognostic from the land surface model, but it may have bias for the prescribed `SST`. 
+We suggest the user download `tos` data from the ocean data set and convet it to atmosphreic data set format, and modify the `Vtable` to ingest the true SST.
 
-`./db/${MODEL_NAME}.csv` records the model-specified variable mapping table. If you plan to use other models, you need to setup your own variable mapping table. 
+### [OPTIONAL] Modify Vtable 
+
+`./db/${MODEL_NAME}.csv` records the model-specified variable mapping table. If you plan to use other models or involve SST in certain cases (e.g. historical run of MPI-ESM1-2-HR), you need to setup your own variable mapping table. 
 
 ``` javascript 
 src_v,aim_v,units,type,lvlmark,desc
@@ -137,15 +140,15 @@ ps,PSFC,Pa,2d,Lev, Surface pressure
 tas,TT,K,2d,PlevPt, 2-m temperature
 uas,UU,m s-1,2d,PlevPt, 10m wind u-component
 vas,VV,m s-1,2d,PlevPt, 10m wind v-component
-ts,SKINTEMP, K,2d,PlevPt, Skin temperature
-ts,SST, K,2d,PlevPt, sea surface temperature
+ts,SKINTEMP,K,2d,PlevPt, Skin temperature
 psl,PMSL,Pa,2d,PlevPt, Mean sea-level pressure
 huss,SPECHUMD, kg kg-1,2d,PlevPt, 2-m relative humidity
-mrsos,SM000010, m3/m-3,2d-soil,PlevPt, 0-10 cm soil moisture
+mrsos,SM000010, kg/m-3,2d-soil,PlevPt, 0-10 cm soil moisture
 tsl,ST000010,K,2d-soil,PlevPt, 0-10 cm soil temp 
-mrsos,SM010200, m3/m-3,2d-soilr,PlevPt, 10-200 cm soil moisture
+mrsos,SM010200, kg/m-3,2d-soilr,PlevPt, 10-200 cm soil moisture
 tsl,ST010200,K,2d-soilr,PlevPt, 10-200 cm soil temp 
 ```
+
 * `src_v` is the name of the variable in the CMIP6 data, which is also used to form the netCDF file name.
 * `aim_v` is the name of the variable archived in WRF intermidiate file, which is used by `metgrid.exe`.
 * `units` is the unit of the variable.
@@ -177,7 +180,19 @@ Functions:
 
 ```
 
+## Troubleshooting
+
+**(Dec 19, 2022)**: Lack of suitable source variables from CMIP6 datasets to drive the dynamical downscaling are common. For example, the available 6-hour `ts` variable in SSP is missing in historical run of `MPI-ESM1-2-HR` output. We cannot directly map the `SST` by `ts`.
+One trade-off is using the `tas` to represent both the land surface and sea surface temperature, just as you could find in the `MPI-ESM1-2-HR_HIST.csv` vtable. While this is not a good strategy. 
+For accurate representation of sea surface temperature, you may need to use 3-hour `tos` variable to generate the SST in historical run (see the Vtable with suffix `SST`). (Thanks [Dr. Paul Nalon from ICHEC](https://www.ichec.ie/staff/paul-nolan-phd) and [Dr. Sium Gebremariam from PSU](http://www.met.psu.edu/people/stg5265) helping with this.) 
+
+**(Nov 27, 2022)**: According to feedback from several users, if you are using Windows Subsystem for Linux (WSL, typically Ubuntu from Microsoft Store), please note Windows does **NOT** support colon ":" in the file name.
+You may rename the output file name or try a pure Linux platform.
+
+
 ### [Appendix] Fetch Input Files
+
+You can refer to `./sample/$MODEL_NAME/download.sh` for downloading specific dataset.
 
 According to WRF Users Guide (v4.2), P3-36:
 > **Required Meteorological Fields for Running WRF**
