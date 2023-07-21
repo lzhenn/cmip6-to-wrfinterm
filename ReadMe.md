@@ -16,8 +16,6 @@
 **CMIP6-to-WRFInterim** uses pure python implementation to convert CMIP6 sub-daily output into WRF intermediate files, which are used to drive the WRF model for regional dynamical downscaling usage.
 Current supported models are listed below. If you hope to use other models, proper modifications are needed.
 
-**(Due to personal issues, I may not be able to answer your questions via email promptly, please using GitHub [issues](https://github.com/lzhenn/cmip6-to-wrfinterm/issues) instead.)**
-
 ## Supported GCMs
 
 | Model Name                    | historical    | SSP126   | SSP245   | SSP585   |
@@ -205,7 +203,6 @@ CMIP6 data can be downloaded from the [LLNL interface](https://esgf-node.llnl.go
 ![](https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/var_table.png)
 
 You may setup your own variable mapping table in `./db/${MODEL_NAME}.csv` if you want to use other models.
-
-**Any question, please contact Zhenning LI (zhenningli91@gmail.com). Since I am receiving many requests recently, please have a short introduction of yourself (e.g. affiliation, research field, etc.) :-).**
+**Any question, please contact Zhenning LI (zhenningli91@gmail.com). Since I am receiving many requests recently, I may not be able to answer your questions via email promptly, please using GitHub [issues](https://github.com/lzhenn/cmip6-to-wrfinterm/issues) instead, and have a short introduction of yourself (e.g. affiliation, research field, etc.) :-).**
 
 
