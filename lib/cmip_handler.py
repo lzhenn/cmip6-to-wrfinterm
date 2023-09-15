@@ -119,11 +119,12 @@ class CMIPHandler(object):
                 
                 # repeated usage in vtable will not be reloaded
                 if varname in self.ds:
+                    idf=idf+1
                     continue
                 
                 # CMIP6 regular
                 if not(self.model_name=='BCMM'):
-                    utils.write_log(print_prefix+'Loading '+self.fn_lst[idx])
+                    utils.write_log(print_prefix+'Loading '+self.fn_lst[idf])
                     ds=xr.open_dataset(self.fn_lst[idf])
                     idf=idf+1
                     
