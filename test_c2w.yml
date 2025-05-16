@@ -1,0 +1,22 @@
+name: test_c2w
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - bottleneck
+  - certifi
+  - numpy
+  - pandas=1.4.2
+  - scipy
+  - cython
+  - cftime
+  - netcdf4=1.5.7
+  - numexpr
+  - packaging
+  - pyparsing
+  - python-dateutil
+  - pytz
+  - six
+  - typing_extensions
+  - xarray
