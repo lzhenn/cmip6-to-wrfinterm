@@ -34,12 +34,15 @@ Current supported models are listed below. If you hope to use other models, prop
 ## Installation
 Please install python3 using Anaconda3 distribution. [Anaconda3](https://www.anaconda.com/products/individual) with python3.8 and 3.9 has been deeply tested, lower version of python3 may also work (without testing). If `numpy`, `pandas`, `scipy`, `xarray`, `netcdf4` are properly installed, you may skip the installation step.
 
-While, we recommend to create a new environment in Anaconda and install the `requirements.txt`:
+While, we recommend to create a new environment in Anaconda:
 
 ```bash
-conda create -n test_c2w python=3.9
+conda config --add channels conda-forge
+conda config --add channels defaults
+conda config --set channel_priority strict
+conda env create -f test_c2w.yml
 conda activate test_c2w
-pip install -r requirements.txt
+
 ```
 
 ## Quick start
