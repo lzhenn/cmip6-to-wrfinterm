@@ -95,7 +95,8 @@ class CMIPHandler(object):
                     varname=itm['src_v']
                     lvlmark=itm['lvlmark']
                     fn=varname+'_'+frq+'r'+lvlmark+'_'+self.model_name
-                    fn=fn+'_'+self.scenario+'_'+in_cfg['esm_flag']+'_'+in_cfg['grid_flag']
+                    file_scenario = 'historical' if self.scenario == 'hist' else self.scenario
+                    fn=fn+'_'+file_scenario+'_'+in_cfg['esm_flag']+'_'+in_cfg['grid_flag']
                     fn+='_'+in_cfg['cmip_strt_ts']+'-'+in_cfg['cmip_end_ts']+'.nc'
                     self.fn_lst.append(self.in_root+'/'+fn)
     def _load_cmip_data(self):
@@ -109,7 +110,7 @@ class CMIPHandler(object):
             vtable_fn=f"{self.model_name}_{irow['variable_group']}"
             df_vtable=pd.read_csv('./db/'+vtable_fn+'.csv')
             if self.model_name=='BCMM':
-                utils.write_log(print_prefix+'Loading '+self.fn_lst[idx])
+                utils.write_log(print_prefix+'Loading '+self.fn_lst[idf])
                 ds=xr.open_dataset(self.fn_lst[idx])
             for idy, itm in df_vtable.iterrows():
                 varname=itm['src_v']
@@ -119,11 +120,13 @@ class CMIPHandler(object):
                 
                 # repeated usage in vtable will not be reloaded
                 if varname in self.ds:
+                    if not(self.model_name=="BCMM"):
+                        idf += 1
                     continue
                 
                 # CMIP6 regular
                 if not(self.model_name=='BCMM'):
-                    utils.write_log(print_prefix+'Loading '+self.fn_lst[idx])
+                    utils.write_log(print_prefix+'Loading '+self.fn_lst[idf])
                     ds=xr.open_dataset(self.fn_lst[idf])
                     idf=idf+1
                     

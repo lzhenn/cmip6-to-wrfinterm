@@ -13,7 +13,7 @@
   - [Troubleshooting](#troubleshooting)
     - [\[Appendix\] Fetch Input Files](#appendix-fetch-input-files)
 
-**If you have questions or concerns, please DO NOT contact me. Academia pays in knowledge, but my career should pay in cash, and I am on the way out.**
+**I was mass-producing excuses to abandon this repo ("gotta make money!"), but [Claude](https://claude.ai/) dragged me back to fill the holes I left behind. Issues and PRs are welcome again!**
 
 **CMIP6-to-WRFInterim** uses pure python implementation to convert CMIP6 sub-daily output into WRF intermediate files, which are used to drive the WRF model for regional dynamical downscaling usage.
 Current supported models are listed below. If you hope to use other models, proper modifications are needed.
@@ -34,12 +34,11 @@ Current supported models are listed below. If you hope to use other models, prop
 ## Installation
 Please install python3 using Anaconda3 distribution. [Anaconda3](https://www.anaconda.com/products/individual) with python3.8 and 3.9 has been deeply tested, lower version of python3 may also work (without testing). If `numpy`, `pandas`, `scipy`, `xarray`, `netcdf4` are properly installed, you may skip the installation step.
 
-While, we recommend to create a new environment in Anaconda and install the `requirements.txt`:
+While, we recommend to create a new environment in Anaconda:
 
 ```bash
-conda create -n test_c2w python=3.9
+conda env create -f test_c2w.yml
 conda activate test_c2w
-pip install -r requirements.txt
 ```
 
 ## Quick start
@@ -205,6 +204,6 @@ CMIP6 data can be downloaded from the [LLNL interface](https://esgf-node.llnl.go
 ![](https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/var_table.png)
 
 You may setup your own variable mapping table in `./db/${MODEL_NAME}.csv` if you want to use other models.
-**Any question, please contact Zhenning LI (zhenningli91@gmail.com). Since I am receiving many requests recently, I may not be able to answer your questions via email promptly, please using GitHub [issues](https://github.com/lzhenn/cmip6-to-wrfinterm/issues) instead, and have a short introduction of yourself (e.g. affiliation, research field, etc.) :-).**
+**Any question, please open a GitHub [issue](https://github.com/lzhenn/cmip6-to-wrfinterm/issues). Have a short introduction of yourself (e.g. affiliation, research field, etc.) :-).**
 
 
