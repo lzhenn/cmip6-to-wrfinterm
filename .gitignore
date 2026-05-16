@@ -1,4 +1,38 @@
-*.log
+# Python runtime / build artefacts
 *.pyc
-*swp
-/output
+*.pyo
+*.swp
+__pycache__/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Output and local scratch
+/output/
+/temp/
+temp.md
+
+# Sample DATA (binary). Namelists, download scripts, and small helpers
+# like gen_fake_data.py stay tracked; the actual NetCDF / GRIB samples
+# do not. Users fetch them via `bash sample/<MODEL>/download.sh` or by
+# running gen_fake_data.py to materialise a synthetic mini-batch.
+sample/**/*.nc
+sample/**/*.nc4
+sample/**/*.grib
+sample/**/*.grb
+sample/**/*.grib2
+sample/**/*.grb2
+
+# Claude Code: keep persistent_context.md (project workflow notes for
+# contributors), exclude per-machine settings + hooks.
+.claude/hooks/
+.claude/settings.local.json
+.claude/projects/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
