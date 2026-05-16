@@ -6,6 +6,8 @@
     - [MPI-ESM-1-2-HR (Default)](#mpi-esm-1-2-hr-default)
     - [BCMM](#bcmm)
     - [EC-Earth3](#ec-earth3)
+    - [CESM2](#cesm2)
+  - [Output file naming](#output-file-naming)
   - [Usage](#usage)
     - [Modify config.ini (`MPI-ESM1-2-HR`)](#modify-configini-mpi-esm1-2-hr)
     - [\[OPTIONAL\] Modify Vtable](#optional-modify-vtable)
@@ -25,6 +27,7 @@ Current supported models are listed below. If you hope to use other models, prop
 |Bias-corrected Multi-Model [^1]|               | N/A      | &#10004; | &#10004; | 
 |MPI-ESM-1-2-HR                 | &#10004;      | &#10004; | &#10004; | &#10004; | 
 |EC-Earth3                      | &#10004;[^2]  |          |          |          | 
+|CESM2                          | &#10004;      |          |          |          |
 
 [^1]: https://www.scidb.cn/en/detail?dataSetId=791587189614968832 
 [^2]: Only done limited tests.
@@ -41,50 +44,75 @@ conda env create -f test_c2w.yml
 conda activate test_c2w
 ```
 
+If you prefer `pip`, a minimal `requirements.txt` is also provided:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Quick start
 
 ### MPI-ESM-1-2-HR (Default)
 ```bash
+# fetch the sample period first (sample/*/*.nc is not in git):
+bash sample/MPI-ESM1-2-HR/download.sh
+# convert:
 python3 run_c2w.py
 ```
 
-Please use Unix-like (Linux) system to run the above command, and it is okay to see some FutureWarnings. If successful, you should see `CMIP6:2100-01-02_00` and `CMIP6:2100-01-02_06` in the `./output` folder.
+Please use a Unix-like (Linux) system to run the above commands, and it is okay to see some FutureWarnings. If successful, you should see `MPI-ESM1-2-HR:2100-01-02_00` and `MPI-ESM1-2-HR:2100-01-02_06` in the `./output` folder (see [Output file naming](#output-file-naming)).
 (See [Troubleshooting](https://github.com/lzhenn/cmip6-to-wrfinterm#troubleshooting) if you are a Windows Subsystem user.)
 
-Copy or link the two intermidiate files to your WPS folder, prepare your **geo_em** files and setup your `namelist.wps` properly, now you are ready to run `metgrid.exe` and the following WRF procedures. 
-There is a simple example of `namelist.wps` and `namelist.input` covering the East Asian region in the `./sample/MPI-ESM-1-2-HR` folder for testing.
-You can also modify `wps_wrf_pipeline.sh` to automate the procedure from `metgrid.exe` to `wrf.exe` if you are operating on a computing node.
+Copy or link the two intermediate files to your WPS folder, prepare your **geo_em** files and setup your `namelist.wps` properly, now you are ready to run `metgrid.exe` and the following WRF procedures. There is a simple `namelist.wps` and `namelist.input` covering the East Asian region in `./sample/MPI-ESM-1-2-HR/`. You can also modify `wps_wrf_pipeline.sh` to automate the chain from `metgrid.exe` to `wrf.exe` on a computing node.
 
-If you run the sample case successfully, you are expected to see snapshots of the skin temperature in the initial condition and after 6-hour WRFv4.3 run as shown as above.
+If you run the sample case successfully, you are expected to see snapshots of the skin temperature in the initial condition and after 6-hour WRFv4.3 run as shown above.
 
 ### BCMM
 ```bash
 python3 run_c2w.py -m BCMM
 ```
-This will use [the Bias-corrected CMIP6 Multi-model dataset](https://www.scidb.cn/en/detail?dataSetId=791587189614968832). 
+This will use [the Bias-corrected CMIP6 Multi-model dataset](https://www.scidb.cn/en/detail?dataSetId=791587189614968832).
+
+> **Note**: `./sample/BCMM/` only contains `download.sh` (and a sample `namelist.*`). You need to fetch the data yourself before running — see `bash sample/BCMM/download.sh` or download manually from the source listed above.
 
 ### EC-Earth3
 ```bash
 python3 run_c2w.py -m EC-Earth3
 ```
-Now, you will find output files in the `./output` folder with the prefix `EC-EARTH3-SURF3H:`. Next, we need to generate additional variables with different frequencies and grids. Please follow the table below to modify the `config.ini` file. Each time after making modifications according one row, execute `run_c2w.py`.
+Single command — produces all atmospheric + surface intermediate files in one pass. EC-Earth3 is now split across three meta rows (`LEV` for 6-hourly hybrid 3-D, `PLEV6H` for 6-hourly geopotential/MSLP, `SURF3H` for 3-hourly near-surface + soil) so the handler discovers each variable from its native CMIP6 table.
 
-| vtable_name     | grid_flag | cmip_strt_ts | cmip_end_ts | cmip_frq | output_prefix    |
-| ----            | ----      | ----         | ----        | ----     | ----             |
-|EC-Earth3_SURF3H | gr        | 197901010000 | 197912312100| 3        | EC-EARTH3-SURF3H |
-|EC-Earth3_SURF6H | gr        | 197901010300 | 197912312100| 6        | EC-EARTH3-SURF6H |
-|EC-Earth3_LEV    | gr        | 197901010000 | 197912311800| 6        | EC-EARTH3        | 
-|EC-Earth3_PLEV   | gr        | 197901010000 | 197912311800| 6        | EC-EARTH3-PLEV   |
-|EC-Earth3_SST    | gn        | 197901010300 | 198001010000| 3        | EC-EARTH3-SST    | 
-
-There is a simple example of `namelist.wps` and `namelist.input` covering the central America in the `./sample/EC-Earth3` folder for testing.
+> **Note**: `./sample/EC-Earth3/` ships only `namelist.{wps,input}` (no NetCDF). Fetch the data from [ESGF](https://esgf-node.llnl.gov/search/cmip6/) (search `source_id=EC-Earth3, experiment_id=historical, variant_label=r1i1p1f1`) into `sample/EC-Earth3/`. SST (`tos`) is on the `gn` (native ocean) grid and currently skipped — atmospheric c2w runs are unaffected; if you need SST, see the open issue list.
 
 If you run the sample case successfully, you are expected to see snapshots of the skin temperature in the initial condition and after 6-hour WRFv4.3 run as shown as below. Thanks [Dr. Tito Maldonado from University of Costa Rica](https://cigefi.ucr.ac.cr/team/tito-maldonado-phd/) for helping with the EC-Earth3 support.
 
 <img src="https://github.com/lzhenn/cmip6-to-wrfinterm/blob/master/fig/EC_EARTH3_skintemp_sample_00.png" alt="drawing" style="width:400px;"/>
 <img src="https://github.com/lzhenn/cmip6-to-wrfinterm/blob/master/fig/EC_EARTH3_skintemp_sample_06.png" alt="drawing" style="width:400px;"/>
 
+### CESM2
+```bash
+python3 run_c2w.py -m CESM2
+```
+This drives [CESM2](https://www.cesm.ucar.edu/models/cesm2) (CMIP6, ensemble `r11i1p1f1`, historical experiment). The Vtables, meta, and config are bundled (`db/CESM2_*.csv`, `conf/config.CESM2.ini`), and CESM2 follows the **single-run** workflow — one invocation produces all main + SST intermediate files, no need for the multi-pass EC-Earth3 dance.
 
+> **Note**: `./sample/CESM2/` only ships a `download.sh` helper, no NetCDF files. Before running you must fetch the data — see [Appendix: Fetch Input Files](#appendix-fetch-input-files). Known caveat: on hosts with old `glibc` / restricted HTTPS the bundled ESGF download script may fail; in that case download manually from [esgf-node.llnl.gov](https://esgf-node.llnl.gov/search/cmip6/) (search `source_id=CESM2`, `experiment_id=historical`, `variant_label=r11i1p1f1`) or use a mirror / Globus.
+
+CESM2 specifics handled internally:
+- no-leap (365-day) calendar via `use_cftime=True`
+- monthly soil (`tsl`, `mrsos`) interpolated to the requested 6-hourly target time
+- daily SST (`tos`) interpolated to the target time
+
+A 24-hour WRF run driven by CESM2 boundary conditions is shown in `fig/cesm2_wrf_24h.gif`.
+
+## Output file naming
+
+Every model produces files in `[OUTPUT]['output_root']` with this convention:
+
+```
+<model_name>:YYYY-MM-DD_HH        # main atmospheric / land record
+<model_name>_SST:YYYY-MM-DD_HH    # SST record (BCMM and CESM2 only)
+```
+
+`<model_name>` is read verbatim from `[INPUT]['model_name']` in the config (e.g. `MPI-ESM1-2-HR`, `BCMM`, `EC-Earth3`, `CESM2`). When wiring up `metgrid.exe`, point the `&metgrid` `fg_name` list at these prefixes. The `output_prefix` key that appears in some configs is **not** consumed by the current code — only `model_name` matters.
 
 ## Usage
 
@@ -119,7 +147,19 @@ output_root = ./output/
 
 After you have edited the `config.ini` file, you can run the script again for your desired period. The intemediate files will be generated in the `[OUTPUT]['output_root']` folder. 
 
-Note that for `MPI-ESM1-2-HR`, the soil properties between 10-200cm is not provided by the model and we overwrote it by 0-10cm soil properties, a special type mark of `2d-soilr` is provided in the varaible mapping table. You may need long-term (~1-month) spin-up run if your research requests accurate soil properties.
+**Soil-data handling.** Each model adapter declares a `soil_strategy` (in `lib/adapters/__init__.py`):
+
+* **`native`** (default for all models) — soil records are written from the source CMIP data:
+  * **Multi-layer source with `depth_bnds`** (e.g. CESM2 with 25 native layers spanning 1 cm to 42 m) — handler does an **overlap-weighted vertical remap** (`utils/soil.py`) onto WRF's standard `ST/SM 000010 / 010040 / 040100 / 100200`. Without `depth_bnds`, falls back to nearest-center on the depth axis.
+  * **Single-layer / surface-only source** (e.g. MPI-ESM1-2-HR's `mrsos`/`tsl`, EC-Earth3's `tslsi`) — vtable rows with type `2d-soilr` (the "repeat" variant) duplicate the surface layer into the deep WRF slots. **These deep values are NOT real physics**; they exist so `real.exe`'s Noah LSM gets the four soil records it requires at init. A long spin-up (≥1 month) is essential when accurate soil state matters.
+* **`skip`** (opt-in only — *not* the default for any model in the repo today) — c2w omits soil records entirely and drops a `<MODEL>.namelist_hints.json` sidecar telling the run script to set
+  ```
+  num_metgrid_soil_levels = 0
+  surface_input_source    = 2
+  ```
+  in `namelist.input`. This is the WRF-recommended fallback for missing soil data, **but** the Noah LSM (`sf_surface_physics=2`) still requires init soil T, so this combo additionally needs `sf_surface_physics=1` (5-layer thermal diffusion). Picking this is a research-design call, not something the tool decides for you.
+
+**Soil init-only caching** (`[OUTPUT] soil_init_only`, default `true`). WRF's LSM only consumes soil at t=0; later met_em files are read by `real.exe` for the structural-consistency check but their soil values are never used by the LSM math. We exploit this: the depth-remap / land-fill / regrid pipeline runs once at t=0, caches the result in `self.outfrm`, and every subsequent wrfinterm writes the same cached slab. real.exe sees soil records at every time (happy), and the physics are identical to running it per-time. Saves substantial CPU on long batches — particularly for CESM2 (25-layer overlap-weighted remap × N timestamps → × 1). Set to `false` only if you're doing something downstream that actually inspects t>0 metgrid soil (e.g. a custom soil-nudging chain).
 
 For historical run, `MPI-ESM1-2-HR` do not provide skin temp output in atmospheric dataset, we use `tas` here to represent the skin temp, which is acceptable over land as the land properties are prognostic from the land surface model, but it may have bias for the prescribed `SST`. 
 We suggest the user download `tos` data from the ocean data set and convet it to atmosphreic data set format, and modify the `Vtable` to ingest the true SST.
@@ -151,33 +191,43 @@ tsl,ST010200,K,2d-soilr,PlevPt, 10-200 cm soil temp
 * `src_v` is the name of the variable in the CMIP6 data, which is also used to form the netCDF file name.
 * `aim_v` is the name of the variable archived in WRF intermidiate file, which is used by `metgrid.exe`.
 * `units` is the unit of the variable.
-* `type` denotes the type of the variable. `3d` means 3-d variable, `2d` means 2-d variable, `2d-soil` means 2-d variable in the soil layer. Note that for `MPI-ESM-1-2-HR`, the soil properties between 10-200cm is not provided by the model and we overwrote it by 0-10cm soil, a special type mark of `2d-soilr` is provided here.
+* `type` denotes the variable kind. Recognised values:
+  * `3d` — 3-D atmospheric field. `lvlmark=Lev` for hybrid-sigma source (handler converts to pressure via `hybrid2pressure`); `lvlmark=PlevPt` for already-on-pressure source.
+  * `2d` — 2-D surface field at a fixed level (`ps`, `tas`, `huss`, `ts`, ...).
+  * `2d-fixed` — time-invariant 2-D (`orog`, `sftlf`).
+  * `2d-mon` / `2d-daily` — 2-D field on monthly/daily cadence, snapped to the target time (`ts`, `tos`).
+  * `2d-soil-mon` — multi-layer monthly soil on a native depth axis. The handler does overlap-weighted depth remapping onto the WRF target layer encoded in `aim_v` (e.g. `ST040100` → 40-100 cm). Requires `depth_bnds` in the source NetCDF.
+  * `2d-soilr-mon` — single-layer monthly soil, replicated across all 4 WRF layers (e.g. CESM2 `mrsos` is published as a single 0-10 cm value).
+  * `2d-soil` / `2d-soilr` — legacy types kept for BCMM (which packs 4 layers into one DataArray). For models that lack a usable deep-soil profile (MPI-ESM1-2-HR, EC-Earth3), these rows are ignored at runtime when the adapter's `soil_strategy='skip'`.
 * `lvlmark` is the level mark of the variable. `PlevPt` means the variable is a 3-d variable with pressure level.
 * `desc` is the description of the variable.
 
-### [Advanced] cmip_handler.py
-
-The core of the converter is `cmip_handler.py`. It is a Python module that handles the CMIP6 data and converts it to WRF intermidiate file. The module first load CMIP6 data according to the `config.ini` file, then it interpolates to regular latXlon mesh. Finally it convert the data to WRF intermidiate file. The module includes the following functions and classes:
-```
-
-Functions:
-    gen_wrf_mid_template():
-        Generate a WRF-Mid template dict for the WRF-Intermediate data.
-
-    write_record(out_file, slab_dic):
-        Write a record to a WRF intermediate file
-    --------------------
-    Classes:
-    CMIPHandler():
-        Construct CMIP Handler 
-
-        Methods
-        -------
-        __init__:   initialize CMIP Handler with config and loading data
-        interp_data: interpolate data to common mesh
-        write_wrfinterm: write wrfinterm file
+### [Advanced] Architecture
 
 ```
+run_c2w.py                       — CLI entry; iterates time series, calls handler
+└── lib/cmip_handler.CMIPHandler — orchestrates load → parse → write
+    ├── lib/adapters/            — model-specific file discovery + dataset opening
+    │   ├── _base.ModelAdapter         abstract: open_for, time_to_index, close
+    │   ├── cmip6.Cmip6Adapter         standard CMIP6 (MPI / EC-Earth3 / CESM2)
+    │   │   ├── discovery = "glob"     no cmip_strt_ts → tolerates unknown time suffix
+    │   │   ├── discovery = "exact"    has cmip_strt_ts → builds filename verbatim
+    │   │   └── use_cftime             auto-on for CFTIME_MODELS (CESM2) or [INPUT] calendar=noleap
+    │   └── bcmm.BcmmAdapter           BCMM packs many vars into one monthly nc4 file
+    ├── utils/grid.OutputGrid    — lat/lon mesh, plev levels, soil layers (override via [OUTPUT])
+    └── utils/soil               — overlap-weighted depth remap (CESM2's 25-layer → WRF's 4)
+```
+
+### Adding a new model
+
+In ≈ four small files (no Python edits needed for most CMIP6 sources):
+
+1. **`db/<MODEL>_<group>.csv` (one or more)** — variable map. Each row is one (source variable, WRF aim_v, type) entry. See `db/CESM2_6hrLev.csv` as the cleanest template.
+2. **`db/cmip6_meta.csv`** — add one row per CMIP6 table you'll consume, with `variable_group` matching the vtable filename and an explicit `table_id` (e.g. `6hrLev`, `Lmon`, `fx`). Mark exactly one row with `var_frq=Nh*` (the master cadence — drives `out_time_series`).
+3. **`conf/config.<MODEL>.ini`** — minimum keys: `[INPUT] input_root, model_name, scenario, esm_flag, grid_flag`; `[OUTPUT] etl_strt_ts, etl_end_ts, output_root`. Omit `cmip_strt_ts/end_ts` to use glob discovery (recommended). Add `calendar = noleap` if your model uses a non-standard calendar.
+4. **`sample/<MODEL>/`** — drop a `download.sh` plus `namelist.{wps,input}` so end-to-end testing is reproducible. Don't commit NetCDF; they're gitignored.
+
+Only models with non-standard layouts (multi-var-per-file, weird directory hierarchies) require a new `lib/adapters/<model>.py` — copy `bcmm.py` as a starting point.
 
 ## Troubleshooting
 
@@ -191,7 +241,13 @@ You may rename the output file name or try a pure Linux platform.
 
 ### [Appendix] Fetch Input Files
 
-You can refer to `./sample/$MODEL_NAME/download.sh` for downloading specific dataset.
+CMIP6 source data is **not bundled with the repo** (it's hundreds of MB of binary NetCDF — keeping it in git makes the repo unwieldy to clone). Each model's `sample/<MODEL>/` directory ships with a `download.sh` helper plus example WRF namelists; run the download script once to pull data into the same directory, then run `python3 run_c2w.py -m <MODEL>` as usual.
+
+For **CESM2** you can also produce a tiny synthetic test batch (10×20 grid, 5 timesteps, ~300 KB) instead of downloading real data:
+```bash
+python3 sample/CESM2/gen_fake_data.py
+```
+Useful for CI / smoke tests that don't need the real 36 MB-per-file CMIP6 chunks.
 
 According to WRF Users Guide (v4.2), P3-36:
 > **Required Meteorological Fields for Running WRF**
