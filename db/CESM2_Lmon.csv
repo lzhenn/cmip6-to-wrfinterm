@@ -1,0 +1,9 @@
+src_v,aim_v,units,type,lvlmark,desc
+tsl,ST000010,K,2d-soil-mon,PlevPt,0-10 cm soil temperature
+tsl,ST010040,K,2d-soil-mon,PlevPt,10-40 cm soil temperature
+tsl,ST040100,K,2d-soil-mon,PlevPt,40-100 cm soil temperature
+tsl,ST100200,K,2d-soil-mon,PlevPt,100-200 cm soil temperature
+mrsos,SM000010,kg/m-3,2d-soilr-mon,PlevPt,0-10 cm soil moisture
+mrsos,SM010040,kg/m-3,2d-soilr-mon,PlevPt,10-40 cm soil moisture
+mrsos,SM040100,kg/m-3,2d-soilr-mon,PlevPt,40-100 cm soil moisture
+mrsos,SM100200,kg/m-3,2d-soilr-mon,PlevPt,100-200 cm soil moisture

@@ -45,6 +45,6 @@
 /
 
 &metgrid
- fg_name = 'CMIP6-EC-EARTH3','CMIP6-EC-EARTH3-PLEV','CMIP6-EC-EARTH3-SURF3H','CMIP6-EC-EARTH3-SURF6H','CMIP6-EC-EARTH3-SST',
- io_form_metgrid = 2, 
+ fg_name = 'EC-Earth3',
+ io_form_metgrid = 2,
 /

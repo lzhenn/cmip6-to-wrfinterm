@@ -31,5 +31,5 @@
  prefix = 'ERASL',
 
 &metgrid
- fg_name = 'CMIP6',
+ fg_name = 'MPI-ESM1-2-HR',
  io_form_metgrid = 2, /

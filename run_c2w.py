@@ -52,7 +52,7 @@ def main_run():
         cmip_hdl.parse_data(time_frm)
         utils.write_log('Writing time: '+str(time_frm))
         cmip_hdl.write_wrfinterm(time_frm, 'main')
-        if cmip_hdl.model_name=='BCMM':
+        if cmip_hdl.model_name in ('BCMM', 'CESM2'):
             cmip_hdl.write_wrfinterm(time_frm, 'sst')
     
 if __name__=='__main__':

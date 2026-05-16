@@ -1,0 +1,6 @@
+numpy
+pandas
+scipy
+xarray
+netcdf4
+cftime
