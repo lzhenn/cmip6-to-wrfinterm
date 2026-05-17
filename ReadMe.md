@@ -16,7 +16,7 @@
   - [Troubleshooting](#troubleshooting)
     - [\[Appendix\] Fetch Input Files](#appendix-fetch-input-files)
 
-**I was mass-producing excuses to abandon this repo ("gotta make money!"), but [Claude](https://claude.ai/) dragged me back to fill the holes I left behind. Issues and PRs are welcome again!**
+**I was mass-producing excuses to abandon this repo ("gotta make money!"), but [Claude](https://claude.ai/) and Codex dragged me back to fill the holes I left behind. Issues and PRs are welcome again!**
 
 **CMIP6-to-WRFInterim** uses pure python implementation to convert CMIP6 sub-daily output into WRF intermediate files, which are used to drive the WRF model for regional dynamical downscaling usage.
 Current supported models are listed below. If you hope to use other models, proper modifications are needed.
