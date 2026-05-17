@@ -1,0 +1,35 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 1,
+ start_date = '2015-01-01_00:00:00',
+ end_date   = '2015-01-02_00:00:00',
+ interval_seconds = 21600,
+ io_form_geogrid = 2, /
+
+&geogrid
+ parent_id         =   1,
+ parent_grid_ratio =   1,
+ i_parent_start    =   1,
+ j_parent_start    =   1,
+ e_we              = 340,
+ e_sn              = 340,
+ geog_data_res     = 'default',
+ dx = 9000,
+ dy = 9000,
+ map_proj = 'mercator',
+
+ ref_lat   = 23.0,
+ ref_lon   = 115.0,
+ truelat1  = 23.0,
+ truelat2  =  0.0,
+ stand_lon = 115.0,
+
+ geog_data_path = '/home/pathsys/static_data_v2/WRF-4.0/WPS_GEOG.v10.20180222/' /
+
+&ungrib
+ out_format = 'WPS',
+ prefix = 'CESM2',
+
+&metgrid
+ fg_name = 'CESM2', 'CESM2_SST',
+ io_form_metgrid = 2, /

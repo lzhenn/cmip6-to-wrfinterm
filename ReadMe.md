@@ -7,6 +7,7 @@
     - [BCMM](#bcmm)
     - [EC-Earth3](#ec-earth3)
     - [CESM2](#cesm2)
+    - [CESM2 SSP245 smoke test](#cesm2-ssp245-smoke-test)
   - [Output file naming](#output-file-naming)
   - [Usage](#usage)
     - [Modify config.ini (`MPI-ESM1-2-HR`)](#modify-configini-mpi-esm1-2-hr)
@@ -27,10 +28,11 @@ Current supported models are listed below. If you hope to use other models, prop
 |Bias-corrected Multi-Model [^1]|               | N/A      | &#10004; | &#10004; | 
 |MPI-ESM-1-2-HR                 | &#10004;      | &#10004; | &#10004; | &#10004; | 
 |EC-Earth3                      | &#10004;[^2]  |          |          |          | 
-|CESM2                          | &#10004;      |          |          |          |
+|CESM2                          | &#10004;      |          | &#10004;[^3] |          |
 
 [^1]: https://www.scidb.cn/en/detail?dataSetId=791587189614968832 
 [^2]: Only done limited tests.
+[^3]: Smoke-tested for CESM2 SSP245 `r11i1p1f1` using the sparse public ScenarioMIP holdings; see [CESM2 SSP245 smoke test](#cesm2-ssp245-smoke-test).
 
 <img src="https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/sample_skintemp.png" alt="drawing" style="width:400px;"/><img src="https://raw.githubusercontent.com/Novarizark/cmip6-to-wrfinterm/master/fig/skintemp006hr.png" alt="drawing" style="width:400px;"/>
 
@@ -102,6 +104,44 @@ CESM2 specifics handled internally:
 - daily SST (`tos`) interpolated to the target time
 
 A 24-hour WRF run driven by CESM2 boundary conditions is shown in `fig/cesm2_wrf_24h.gif`.
+
+### CESM2 SSP245 smoke test
+```bash
+# fetch a real 2-day subset from UCAR/ORNL OPeNDAP
+bash sample/CESM2-ssp245/download.sh
+
+# convert 2015-01-01_00 through 2015-01-02_00
+python3 run_c2w.py -m CESM2-ssp245
+```
+
+This uses the CMIP6 ScenarioMIP CESM2 `ssp245` ensemble member `r11i1p1f1`.
+The public high-frequency holdings are sparse but enough for an end-to-end
+smoke test: `6hrLev` provides `ta`, `ua`, `va`, `hus`, `ps`; `6hrPlev`
+provides `psl`; daily/monthly tables provide near-surface temperature/humidity,
+skin temperature, SST, and soil. The helper downloads only the small time subset
+needed for the sample and regrids native-grid `tos` to a regular lat/lon file
+before c2w reads it.
+
+> **Expected WRF note**: CESM2 SSP245 does not publish `uas`/`vas`; `real.exe`
+> reports that missing surface winds are replaced with the closest model level.
+> That warning is expected for this sample.
+
+To carry the generated intermediate files into WPS/WRF:
+
+```bash
+cp sample/CESM2-ssp245/namelist.wps /path/to/WPS/
+cp sample/CESM2-ssp245/namelist.input /path/to/WRF/run/
+
+cd /path/to/WPS
+ln -sf /path/to/cmip6-to-wrfinterm/output/CESM2:* ./
+ln -sf /path/to/cmip6-to-wrfinterm/output/CESM2_SST:* ./
+mpirun -np 8 ./metgrid.exe
+
+cd /path/to/WRF/run
+ln -sf /path/to/WPS/met_em.d01.* ./
+mpirun -np 16 ./real.exe
+mpirun -np 32 ./wrf.exe
+```
 
 ## Output file naming
 
@@ -243,11 +283,19 @@ You may rename the output file name or try a pure Linux platform.
 
 CMIP6 source data is **not bundled with the repo** (it's hundreds of MB of binary NetCDF — keeping it in git makes the repo unwieldy to clone). Each model's `sample/<MODEL>/` directory ships with a `download.sh` helper plus example WRF namelists; run the download script once to pull data into the same directory, then run `python3 run_c2w.py -m <MODEL>` as usual.
 
+For **CESM2 SSP245**, use the dedicated real-data smoke-test helper:
+```bash
+bash sample/CESM2-ssp245/download.sh
+python3 run_c2w.py -m CESM2-ssp245
+```
+
 For **CESM2** you can also produce a tiny synthetic test batch (10×20 grid, 5 timesteps, ~300 KB) instead of downloading real data:
 ```bash
 python3 sample/CESM2/gen_fake_data.py
 ```
 Useful for CI / smoke tests that don't need the real 36 MB-per-file CMIP6 chunks.
+Set `CESM2_FAKE_EXP=ssp245 CESM2_FAKE_YEAR=2015` if you need synthetic files
+with SSP-style names.
 
 According to WRF Users Guide (v4.2), P3-36:
 > **Required Meteorological Fields for Running WRF**
@@ -261,5 +309,4 @@ CMIP6 data can be downloaded from the [LLNL interface](https://esgf-node.llnl.go
 
 You may setup your own variable mapping table in `./db/${MODEL_NAME}.csv` if you want to use other models.
 **Any question, please open a GitHub [issue](https://github.com/lzhenn/cmip6-to-wrfinterm/issues). Have a short introduction of yourself (e.g. affiliation, research field, etc.) :-).**
-
 

@@ -14,3 +14,10 @@ CESM2,hist,3hr,,3h,3hr
 CESM2,hist,Amon,,1M,Amon
 CESM2,hist,day,,1D,Oday
 CESM2,hist,Lmon,,1M,Lmon
+CESM2,ssp,fx,,fx,fx
+CESM2,ssp,6hrLev,,6h*,6hrLev
+CESM2,ssp,6hrPlev,,6h,6hrPlev
+CESM2,ssp,daySurf,,1D,day
+CESM2,ssp,Amon,,1M,Amon
+CESM2,ssp,Oday,,1D,Oday
+CESM2,ssp,Lmon,,1M,Lmon

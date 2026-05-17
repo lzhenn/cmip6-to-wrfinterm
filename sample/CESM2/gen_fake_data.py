@@ -8,6 +8,10 @@ Grid: 10x20 (lat x lon), 3 hybrid levels, 2 pressure levels, 4 soil layers.
 
 Run:
     conda run -n uranus-cmip python3 sample/CESM2/gen_fake_data.py
+
+Optional environment overrides for scenario smoke tests:
+    CESM2_FAKE_EXP=ssp245 CESM2_FAKE_YEAR=2015 \
+      conda run -n uranus-cmip python3 sample/CESM2/gen_fake_data.py
 """
 
 import os
@@ -16,44 +20,50 @@ import netCDF4 as nc
 import cftime
 
 OUTDIR = os.path.dirname(os.path.abspath(__file__))
-MEM = "r11i1p1f1"
-GRID = "gn"
-EXP = "historical"
 MODEL = "CESM2"
+MEM = os.environ.get("CESM2_FAKE_MEMBER", "r11i1p1f1")
+GRID = os.environ.get("CESM2_FAKE_GRID", "gn")
+EXP = os.environ.get("CESM2_FAKE_EXP", "historical")
+START_YEAR = int(os.environ.get("CESM2_FAKE_YEAR", "1990"))
 VER = "v20190313"
 
 # Small grid for fast testing
 NLAT, NLON = 10, 20
-NLEV = 3       # hybrid model levels
-NPLEV = 2      # pressure levels (6hrPlevPt)
+NLEV = 14      # hybrid model levels
+NPLEV = 14     # pressure levels (6hrPlevPt)
 NSOIL = 4      # soil layers
 
 LATS = np.linspace(-90, 90, NLAT, dtype=np.float32)
 LONS = np.linspace(0, 355, NLON, dtype=np.float32)
 
-# CESM2 hybrid coefficients (top 3 levels from real data, scaled)
-AP = np.array([0.0, 500.0, 2000.0], dtype=np.float64)   # Pa
-B  = np.array([0.0, 0.01,  0.05],   dtype=np.float64)
+# Synthetic hybrid coefficients. B=0 makes these pressure-like levels, which
+# keeps the WRF smoke test physically monotonic and deterministic.
+PLEV_PA = np.array([
+    100000.0, 92500.0, 85000.0, 70000.0, 60000.0, 50000.0, 40000.0,
+    30000.0, 25000.0, 20000.0, 15000.0, 10000.0, 7000.0, 5000.0,
+], dtype=np.float64)
+AP = PLEV_PA.copy()
+B  = np.zeros_like(AP)
 P0 = 100000.0  # Pa
 
-# Time: 1990-01-01 00Z to 1990-01-02 00Z, 5 steps × 6h
+# Time: Jan 1 00Z to Jan 2 00Z, 5 steps × 6h
 TIMES_6H = [
-    cftime.DatetimeNoLeap(1990, 1, 1,  0),
-    cftime.DatetimeNoLeap(1990, 1, 1,  6),
-    cftime.DatetimeNoLeap(1990, 1, 1, 12),
-    cftime.DatetimeNoLeap(1990, 1, 1, 18),
-    cftime.DatetimeNoLeap(1990, 1, 2,  0),
+    cftime.DatetimeNoLeap(START_YEAR, 1, 1,  0),
+    cftime.DatetimeNoLeap(START_YEAR, 1, 1,  6),
+    cftime.DatetimeNoLeap(START_YEAR, 1, 1, 12),
+    cftime.DatetimeNoLeap(START_YEAR, 1, 1, 18),
+    cftime.DatetimeNoLeap(START_YEAR, 1, 2,  0),
 ]
-# Monthly soil: just January 1990
-TIMES_MON = [cftime.DatetimeNoLeap(1990, 1, 16, 12)]
-# Daily SST: 3 days around 1990-01-01
+# Monthly soil: just January
+TIMES_MON = [cftime.DatetimeNoLeap(START_YEAR, 1, 16, 12)]
+# Daily SST: 3 days around Jan 1
 TIMES_DAY = [
-    cftime.DatetimeNoLeap(1990, 1,  1),
-    cftime.DatetimeNoLeap(1990, 1,  2),
-    cftime.DatetimeNoLeap(1990, 1,  3),
+    cftime.DatetimeNoLeap(START_YEAR, 1,  1),
+    cftime.DatetimeNoLeap(START_YEAR, 1,  2),
+    cftime.DatetimeNoLeap(START_YEAR, 1,  3),
 ]
 
-PLEV_HPA = np.array([100000.0, 85000.0], dtype=np.float64)  # Pa for 6hrPlevPt
+PLEV_HPA = PLEV_PA.copy()  # Pa for 6hrPlevPt
 SOIL_DEPTHS = np.array([0.05, 0.25, 0.70, 1.50], dtype=np.float64)  # m
 
 
@@ -102,15 +112,25 @@ def _write_lev_dims(ds):
 
 def make_6hrLev():
     """6hrLev: one file per variable (CMIP6 convention)."""
-    TRANGE = "19900101-19900102"
+    TRANGE = f"{START_YEAR}0101-{START_YEAR}0102"
     NT = len(TIMES_6H)
+    zfac = np.linspace(0.0, 1.0, NLEV, dtype=np.float32)
+    lat_term = (LATS / 90.0).reshape(1, 1, NLAT, 1)
+    lon_term = np.sin(np.deg2rad(LONS)).reshape(1, 1, 1, NLON)
+    time_term = np.arange(NT, dtype=np.float32).reshape(NT, 1, 1, 1)
+    lev_term = zfac.reshape(1, NLEV, 1, 1)
+
+    ta_vals = 292.0 - 65.0 * lev_term - 18.0 * np.abs(lat_term) + 0.2 * time_term
+    ua_vals = 8.0 + 12.0 * lev_term + 1.5 * lon_term
+    va_vals = 2.0 * lat_term + 0.5 * time_term
+    hus_vals = 0.014 * np.exp(-4.0 * lev_term) * (1.0 - 0.4 * np.abs(lat_term))
 
     # ta
     for vn, units, vals in [
-        ("ta",  "K",        270.0 + np.random.randn(NT, NLEV, NLAT, NLON)),
-        ("ua",  "m s-1",    np.random.randn(NT, NLEV, NLAT, NLON) * 10),
-        ("va",  "m s-1",    np.random.randn(NT, NLEV, NLAT, NLON) * 10),
-        ("hus", "kg kg-1",  np.abs(np.random.randn(NT, NLEV, NLAT, NLON)) * 0.005 + 0.001),
+        ("ta",  "K",        ta_vals),
+        ("ua",  "m s-1",    ua_vals),
+        ("va",  "m s-1",    va_vals),
+        ("hus", "kg kg-1",  hus_vals),
     ]:
         fname = f"{vn}_6hrLev_{MODEL}_{EXP}_{MEM}_{GRID}_{TRANGE}.nc"
         path = os.path.join(OUTDIR, fname)
@@ -125,7 +145,7 @@ def make_6hrLev():
             v = ds.createVariable(vn, "f4", ("time", "lev", "lat", "lon"),
                                   fill_value=1e20)
             v.units = units
-            v[:] = vals
+            v[:] = np.broadcast_to(vals, (NT, NLEV, NLAT, NLON))
         print(f"  -> {os.path.getsize(path) // 1024} KB")
 
     # ps: 2D
@@ -142,14 +162,16 @@ def make_6hrLev():
         ps = ds.createVariable("ps", "f4", ("time", "lat", "lon"),
                                fill_value=1e20)
         ps.units = "Pa"
-        ps[:] = 100000.0 + np.random.randn(NT, NLAT, NLON) * 200
+        ps[:] = np.broadcast_to(
+            100000.0 + 500.0 * np.cos(np.deg2rad(LATS))[:, None],
+            (NT, NLAT, NLON))
     print(f"  -> {os.path.getsize(path) // 1024} KB")
 
 
 def make_6hrPlevPt():
     """6hrPlevPt: zg psl — on standard pressure levels."""
     fname = (f"zg_6hrPlevPt_{MODEL}_{EXP}_{MEM}_{GRID}_"
-             f"19900101-19900102.nc")
+             f"{START_YEAR}0101-{START_YEAR}0102.nc")
     path = os.path.join(OUTDIR, fname)
     print(f"Writing {fname}")
     with nc.Dataset(path, "w") as ds:
@@ -164,25 +186,30 @@ def make_6hrPlevPt():
         plv.units = "Pa"
         plv[:] = PLEV_HPA
 
-        # zg: geopotential height (m) — roughly 200–13000 m
+        # zg: geopotential height (m), increasing monotonically upward.
         zg = ds.createVariable("zg", "f4", ("time", "plev", "lat", "lon"),
                                fill_value=1e20)
         zg.units = "m"
-        zg[:] = np.array([[[12000.0 + 1000.0 * j / NLAT for _ in range(NLON)]
-                            for j in range(NLAT)]
-                           for _ in range(len(TIMES_6H))]).reshape(
-                               len(TIMES_6H), 1, NLAT, NLON) * np.array(
-                               [1.0, 0.5]).reshape(1, 2, 1, 1)
+        heights = np.array([
+            100.0, 760.0, 1450.0, 3000.0, 4200.0, 5600.0, 7200.0,
+            9200.0, 10300.0, 11800.0, 13800.0, 16200.0, 18400.0, 20500.0,
+        ], dtype=np.float32)
+        zg[:] = np.broadcast_to(
+            heights.reshape(1, NPLEV, 1, 1)
+            + 20.0 * (LATS / 90.0).reshape(1, 1, NLAT, 1),
+            (len(TIMES_6H), NPLEV, NLAT, NLON))
 
         # psl: mean sea-level pressure
         psl = ds.createVariable("psl", "f4", ("time", "lat", "lon"),
                                 fill_value=1e20)
         psl.units = "Pa"
-        psl[:] = 101325.0 + np.random.randn(len(TIMES_6H), NLAT, NLON) * 300
+        psl[:] = np.broadcast_to(
+            101325.0 + 300.0 * np.cos(np.deg2rad(LATS))[:, None],
+            (len(TIMES_6H), NLAT, NLON))
 
     # psl in its own file
     fname2 = (f"psl_6hrPlevPt_{MODEL}_{EXP}_{MEM}_{GRID}_"
-              f"19900101-19900102.nc")
+              f"{START_YEAR}0101-{START_YEAR}0102.nc")
     path2 = os.path.join(OUTDIR, fname2)
     print(f"Writing {fname2}")
     with nc.Dataset(path2, "w") as ds:
@@ -193,7 +220,9 @@ def make_6hrPlevPt():
         psl = ds.createVariable("psl", "f4", ("time", "lat", "lon"),
                                 fill_value=1e20)
         psl.units = "Pa"
-        psl[:] = 101325.0 + np.random.randn(len(TIMES_6H), NLAT, NLON) * 300
+        psl[:] = np.broadcast_to(
+            101325.0 + 300.0 * np.cos(np.deg2rad(LATS))[:, None],
+            (len(TIMES_6H), NLAT, NLON))
     print(f"  -> {os.path.getsize(path2) // 1024} KB")
 
 
@@ -206,7 +235,7 @@ def make_3hr():
         ("huss", "kg kg-1",  0.005),
     ]:
         fname = (f"{vn}_3hr_{MODEL}_{EXP}_{MEM}_{GRID}_"
-                 f"199001010000-199001020000.nc")
+                 f"{START_YEAR}01010000-{START_YEAR}01020000.nc")
         path = os.path.join(OUTDIR, fname)
         print(f"Writing {fname}")
         with nc.Dataset(path, "w") as ds:
@@ -224,7 +253,7 @@ def make_3hr():
 def make_tos():
     """Oday: tos — SST."""
     fname = (f"tos_Oday_{MODEL}_{EXP}_{MEM}_{GRID}_"
-             f"19900101-19900103.nc")
+             f"{START_YEAR}0101-{START_YEAR}0103.nc")
     path = os.path.join(OUTDIR, fname)
     print(f"Writing {fname}")
     with nc.Dataset(path, "w") as ds:
@@ -239,11 +268,59 @@ def make_tos():
     print(f"  -> {os.path.getsize(path) // 1024} KB")
 
 
+def make_Amon():
+    """Amon: ts — monthly surface skin temperature."""
+    fname = (f"ts_Amon_{MODEL}_{EXP}_{MEM}_{GRID}_"
+             f"{START_YEAR - 1}12-{START_YEAR}02.nc")
+    path = os.path.join(OUTDIR, fname)
+    print(f"Writing {fname}")
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("lat", NLAT)
+        ds.createDimension("lon", NLON)
+        _add_time(ds, TIMES_MON)
+        _add_latlon(ds)
+        ts = ds.createVariable("ts", "f4", ("time", "lat", "lon"),
+                               fill_value=1e20)
+        ts.units = "K"
+        ts[:] = 280.0 + np.random.randn(len(TIMES_MON), NLAT, NLON) * 3
+    print(f"  -> {os.path.getsize(path) // 1024} KB")
+
+
+def make_fx():
+    """fx: orog/sftlf — static surface fields."""
+    fname_orog = f"orog_fx_{MODEL}_{EXP}_{MEM}_{GRID}.nc"
+    path = os.path.join(OUTDIR, fname_orog)
+    print(f"Writing {fname_orog}")
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("lat", NLAT)
+        ds.createDimension("lon", NLON)
+        _add_latlon(ds)
+        orog = ds.createVariable("orog", "f4", ("lat", "lon"),
+                                 fill_value=1e20)
+        orog.units = "m"
+        ridge = np.maximum(0.0, 1200.0 * np.cos(np.deg2rad(LATS))[:, None])
+        orog[:] = ridge + np.zeros((NLAT, NLON), dtype=np.float32)
+    print(f"  -> {os.path.getsize(path) // 1024} KB")
+
+    fname_sftlf = f"sftlf_fx_{MODEL}_{EXP}_{MEM}_{GRID}.nc"
+    path = os.path.join(OUTDIR, fname_sftlf)
+    print(f"Writing {fname_sftlf}")
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("lat", NLAT)
+        ds.createDimension("lon", NLON)
+        _add_latlon(ds)
+        sftlf = ds.createVariable("sftlf", "f4", ("lat", "lon"),
+                                  fill_value=1e20)
+        sftlf.units = "%"
+        sftlf[:] = np.where(LATS[:, None] > -60.0, 100.0, 0.0)
+    print(f"  -> {os.path.getsize(path) // 1024} KB")
+
+
 def make_Lmon():
     """Lmon: tsl mrsos — monthly soil."""
     # tsl: soil temperature on 4 depth layers
     fname_tsl = (f"tsl_Lmon_{MODEL}_{EXP}_{MEM}_{GRID}_"
-                 f"198912-199002.nc")
+                 f"{START_YEAR - 1}12-{START_YEAR}02.nc")
     path = os.path.join(OUTDIR, fname_tsl)
     print(f"Writing {fname_tsl}")
     with nc.Dataset(path, "w") as ds:
@@ -263,7 +340,7 @@ def make_Lmon():
 
     # mrsos: top 10 cm soil moisture (single layer, kg m-2)
     fname_mr = (f"mrsos_Lmon_{MODEL}_{EXP}_{MEM}_{GRID}_"
-                f"198912-199002.nc")
+                f"{START_YEAR - 1}12-{START_YEAR}02.nc")
     path = os.path.join(OUTDIR, fname_mr)
     print(f"Writing {fname_mr}")
     with nc.Dataset(path, "w") as ds:
@@ -281,9 +358,11 @@ def make_Lmon():
 if __name__ == "__main__":
     np.random.seed(42)
     print(f"Generating fake CESM2 data in: {OUTDIR}")
+    make_fx()
     make_6hrLev()
     make_6hrPlevPt()
     make_3hr()
     make_tos()
+    make_Amon()
     make_Lmon()
     print("\nDone. Run: conda run -n uranus-cmip python3 run_c2w.py -m CESM2")

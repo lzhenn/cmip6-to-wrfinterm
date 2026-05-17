@@ -1,0 +1,3 @@
+src_v,aim_v,units,type,lvlmark,desc
+tas,TT,K,2d-daily,PlevPt,daily near-surface air temperature
+huss,SPECHUMD,kg kg-1,2d-daily,PlevPt,daily near-surface specific humidity
